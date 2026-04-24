@@ -86,12 +86,12 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 3: Accessibility selection reader
 
-- [ ] add a file `SelectionReader.swift` with a type that reads the current selection by chaining AX attribute lookups: system-wide element → `kAXFocusedApplicationAttribute` → `kAXFocusedUIElementAttribute` → `kAXSelectedTextAttribute`
-- [ ] treat `AXError.apiDisabled`, missing attributes, wrong types, and empty strings as "no selection" (return `nil` with a log entry)
-- [ ] factor the AX calls behind a small protocol so tests can inject a fake that returns canned errors or values without touching real APIs
-- [ ] call the reader from `AskEdithIntent.perform()` and log the first 200 characters of the captured text with private-data privacy classification
-- [ ] add unit tests covering the reader branches via the fake: API disabled → `nil`; missing attribute → `nil`; wrong type → `nil`; empty string → `nil`; valid string → returned as a Swift `String`
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
+- [x] add a file `SelectionReader.swift` with a type that reads the current selection by chaining AX attribute lookups: system-wide element → `kAXFocusedApplicationAttribute` → `kAXFocusedUIElementAttribute` → `kAXSelectedTextAttribute`
+- [x] treat `AXError.apiDisabled`, missing attributes, wrong types, and empty strings as "no selection" (return `nil` with a log entry)
+- [x] factor the AX calls behind a small protocol so tests can inject a fake that returns canned errors or values without touching real APIs
+- [x] call the reader from `AskEdithIntent.perform()` and log the first 200 characters of the captured text with private-data privacy classification
+- [x] add unit tests covering the reader branches via the fake: API disabled → `nil`; missing attribute → `nil`; wrong type → `nil`; empty string → `nil`; valid string → returned as a Swift `String`
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
 
 ### Task 4: Accessibility permission check and onboarding window
 
