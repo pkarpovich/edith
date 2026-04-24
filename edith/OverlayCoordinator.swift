@@ -48,6 +48,9 @@ final class OverlayCoordinator {
         guard let continuation else { return }
         self.continuation = nil
         teardown()
+        if case .confirmed(let text) = outcome {
+            Paster.paste(text)
+        }
         Logger.edith.info("OverlayCoordinator resolved: \(String(describing: outcome), privacy: .public)")
         continuation.resume(returning: outcome)
     }

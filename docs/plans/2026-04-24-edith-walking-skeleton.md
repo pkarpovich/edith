@@ -114,11 +114,11 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 6: Paste-back with pasteboard save and restore
 
-- [ ] add `PasteboardSnapshot.swift` as a pure value type that captures the types and payloads of a given `NSPasteboard`'s items and can re-apply them to a pasteboard later; pasteboard is injected so tests can target a named test pasteboard instead of `.general`
-- [ ] add `Paster.swift` that, given a string: captures a snapshot of `.general`, writes the string as `.string`, posts synthesized ⌘V key-down and key-up CGEvents at the HID tap, then restores the snapshot after ~250 ms
-- [ ] connect the overlay's confirm callback to `Paster.paste(result)` and have the coordinator dismiss the panel afterwards
-- [ ] add unit tests that use a dedicated test pasteboard (not `.general`) to verify snapshot round-trip: write items, snapshot, mutate, apply, verify restored types and payloads
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 7
+- [x] add `PasteboardSnapshot.swift` as a pure value type that captures the types and payloads of a given `NSPasteboard`'s items and can re-apply them to a pasteboard later; pasteboard is injected so tests can target a named test pasteboard instead of `.general`
+- [x] add `Paster.swift` that, given a string: captures a snapshot of `.general`, writes the string as `.string`, posts synthesized ⌘V key-down and key-up CGEvents at the HID tap, then restores the snapshot after ~250 ms
+- [x] connect the overlay's confirm callback to `Paster.paste(result)` and have the coordinator dismiss the panel afterwards
+- [x] add unit tests that use a dedicated test pasteboard (not `.general`) to verify snapshot round-trip: write items, snapshot, mutate, apply, verify restored types and payloads
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 7
 
 ### Task 7: Verify automated acceptance criteria
 
