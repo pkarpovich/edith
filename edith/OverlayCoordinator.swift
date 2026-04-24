@@ -51,7 +51,13 @@ final class OverlayCoordinator {
         if case .confirmed(let text) = outcome {
             Paster.paste(text)
         }
-        Logger.edith.info("OverlayCoordinator resolved: \(String(describing: outcome), privacy: .public)")
+        let label: String = {
+            switch outcome {
+            case .confirmed: return "confirmed"
+            case .dismissed: return "dismissed"
+            }
+        }()
+        Logger.edith.info("OverlayCoordinator resolved: \(label, privacy: .public)")
         continuation.resume(returning: outcome)
     }
 

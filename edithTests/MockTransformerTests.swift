@@ -24,6 +24,6 @@ struct MockTransformerTests {
 
     @Test
     func mixedContentRetainsNonLetters() {
-        #expect(MockTransformer.transform("Edith v0.1 — ready!") == "EDITH V0.1 — READY!")
+        #expect(MockTransformer.transform("Edith v0.1 - ready!") == "EDITH V0.1 - READY!")
     }
 }
