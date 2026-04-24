@@ -122,10 +122,10 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 7: Verify automated acceptance criteria
 
-- [ ] `xcodebuild -scheme edith build` passes with zero warnings
-- [ ] `xcodebuild -scheme edith test` passes with all unit tests green
-- [ ] all task checkboxes above are marked `[x]`
-- [ ] no `TODO` / `FIXME` left in files created in Tasks 1–6
+- [x] `xcodebuild -scheme edith build` passes with zero warnings
+- [x] `xcodebuild -scheme edith test` passes with all unit tests green
+- [x] all task checkboxes above are marked `[x]`
+- [x] no `TODO` / `FIXME` left in files created in Tasks 1–6
 
 ## Technical Details
 
