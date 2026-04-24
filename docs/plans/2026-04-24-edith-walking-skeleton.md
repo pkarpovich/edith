@@ -78,11 +78,11 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 2: AskEdithIntent declared and exposed
 
-- [ ] add a file `AskEdithIntent.swift` declaring a struct conforming to `AppIntent` with `title` set to the localized string `"Ask Edith"`, `supportedModes` set to `[.background]`, and a `perform()` method that logs a timestamped message via `os.Logger` and returns an empty `.result()`
-- [ ] add a file `EdithShortcutsProvider.swift` declaring a type conforming to `AppShortcutsProvider` that lists `AskEdithIntent` so the action registers with Shortcuts.app automatically on first launch
-- [ ] add a `Logger` extension with a stable subsystem (bundle id) and a `edith` category, used from `perform()`
-- [ ] add unit tests asserting `AskEdithIntent.title` equals the expected string and `AskEdithIntent.supportedModes` equals `[.background]`
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
+- [x] add a file `AskEdithIntent.swift` declaring a struct conforming to `AppIntent` with `title` set to the localized string `"Ask Edith"`, `supportedModes` set to `[.background]`, and a `perform()` method that logs a timestamped message via `os.Logger` and returns an empty `.result()`
+- [x] add a file `EdithShortcutsProvider.swift` declaring a type conforming to `AppShortcutsProvider` that lists `AskEdithIntent` so the action registers with Shortcuts.app automatically on first launch
+- [x] add a `Logger` extension with a stable subsystem (bundle id) and a `edith` category, used from `perform()` (marked `nonisolated` since `NonisolatedNonsendingByDefault` makes `perform()` nonisolated and cannot touch a MainActor-isolated static)
+- [x] add unit tests asserting `AskEdithIntent.title` equals the expected string and `AskEdithIntent.supportedModes` equals `[.background]`
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
 
 ### Task 3: Accessibility selection reader
 
