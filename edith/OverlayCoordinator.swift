@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 import SwiftUI
 import os
 
@@ -48,16 +49,24 @@ final class OverlayCoordinator {
         guard let continuation else { return }
         self.continuation = nil
         teardown()
+        var pasteFailed = false
         if case .confirmed(let text) = outcome {
-            Paster.paste(text)
+            if !Paster.paste(text) {
+                pasteFailed = true
+                NSSound.beep()
+            }
         }
         let label: String = {
             switch outcome {
-            case .confirmed: return "confirmed"
+            case .confirmed: return pasteFailed ? "confirmed-paste-failed" : "confirmed"
             case .dismissed: return "dismissed"
             }
         }()
-        Logger.edith.info("OverlayCoordinator resolved: \(label, privacy: .public)")
+        if pasteFailed {
+            Logger.edith.error("OverlayCoordinator resolved: \(label, privacy: .public)")
+        } else {
+            Logger.edith.info("OverlayCoordinator resolved: \(label, privacy: .public)")
+        }
         continuation.resume(returning: outcome)
     }
 
@@ -71,9 +80,72 @@ final class OverlayCoordinator {
     }
 
     private static func centeredRect(for size: NSSize) -> NSRect {
-        let screenFrame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-        let x = screenFrame.midX - size.width / 2
-        let y = screenFrame.midY - size.height / 2
+        let screen = activeScreen()
+        let frame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let x = frame.midX - size.width / 2
+        let y = frame.midY - size.height / 2
         return NSRect(x: x, y: y, width: size.width, height: size.height)
+    }
+
+    private static func activeScreen() -> NSScreen? {
+        if let screen = screenFromFocusedWindow() {
+            return screen
+        }
+        let mouse = NSEvent.mouseLocation
+        if let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }) {
+            return screen
+        }
+        return NSScreen.main ?? NSScreen.screens.first
+    }
+
+    private static func screenFromFocusedWindow() -> NSScreen? {
+        guard let frame = focusedWindowAXFrame(), let primary = NSScreen.screens.first else {
+            return nil
+        }
+        let axCenter = CGPoint(x: frame.midX, y: frame.midY)
+        let nsCenter = CGPoint(x: axCenter.x, y: primary.frame.maxY - axCenter.y)
+        return NSScreen.screens.first { NSMouseInRect(nsCenter, $0.frame, false) }
+    }
+
+    private static func focusedWindowAXFrame() -> CGRect? {
+        let systemWide = AXUIElementCreateSystemWide()
+        guard let app = copyAXElement(systemWide, attribute: kAXFocusedApplicationAttribute) else {
+            return nil
+        }
+        guard let window = copyAXElement(app, attribute: kAXFocusedWindowAttribute) else {
+            return nil
+        }
+        guard
+            let position: CGPoint = copyAXValue(window, attribute: kAXPositionAttribute, type: .cgPoint),
+            let size: CGSize = copyAXValue(window, attribute: kAXSizeAttribute, type: .cgSize)
+        else {
+            return nil
+        }
+        return CGRect(origin: position, size: size)
+    }
+
+    private static func copyAXElement(_ element: AXUIElement, attribute: String) -> AXUIElement? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success,
+              let value = ref,
+              CFGetTypeID(value) == AXUIElementGetTypeID()
+        else {
+            return nil
+        }
+        return (value as! AXUIElement)
+    }
+
+    private static func copyAXValue<T>(_ element: AXUIElement, attribute: String, type: AXValueType) -> T? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success,
+              let value = ref,
+              CFGetTypeID(value) == AXValueGetTypeID()
+        else {
+            return nil
+        }
+        var result = UnsafeMutablePointer<T>.allocate(capacity: 1)
+        defer { result.deallocate() }
+        guard AXValueGetValue(value as! AXValue, type, result) else { return nil }
+        return result.pointee
     }
 }
