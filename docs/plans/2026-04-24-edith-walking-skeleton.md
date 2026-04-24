@@ -95,12 +95,12 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 4: Accessibility permission check and onboarding window
 
-- [ ] add a file `PermissionsCheck.swift` exposing a boolean property that wraps `AXIsProcessTrustedWithOptions` with the no-prompt option, so checks do not re-trigger the system prompt
-- [ ] add a constant `AccessibilityDeepLink` holding the `x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility` URL
-- [ ] add a SwiftUI `OnboardingView` with a short message and a button that opens the deep link via `NSWorkspace`
-- [ ] extend the app scene to show an onboarding `Window` on launch iff AX is not granted, and to show a status line ("Accessibility: granted" / "not granted") inside the `MenuBarExtra`
-- [ ] add unit tests asserting the deep-link URL string matches the expected constant and the status-formatting helper returns the expected two outputs for true and false
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 5
+- [x] add a file `PermissionsCheck.swift` exposing a boolean property that wraps `AXIsProcessTrustedWithOptions` with the no-prompt option, so checks do not re-trigger the system prompt
+- [x] add a constant `AccessibilityDeepLink` holding the `x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility` URL
+- [x] add a SwiftUI `OnboardingView` with a short message and a button that opens the deep link via `NSWorkspace`
+- [x] extend the app scene to show an onboarding `Window` on launch iff AX is not granted, and to show a status line ("Accessibility: granted" / "not granted") inside the `MenuBarExtra`
+- [x] add unit tests asserting the deep-link URL string matches the expected constant and the status-formatting helper returns the expected two outputs for true and false
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 5
 
 ### Task 5: Nonactivating overlay panel with mock result
 
