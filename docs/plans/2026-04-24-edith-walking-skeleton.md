@@ -62,14 +62,19 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 1: Xcode project skeleton
 
-- [ ] create Xcode project: macOS → App template, SwiftUI lifecycle, product name `edith`, bundle id `space.pkarpovich.edith`, min deployment macOS 26.4, unit-test bundle included
-- [ ] set `LSUIElement = YES` in `Info.plist` so the app has no Dock icon
-- [ ] in target Signing & Capabilities: set **Team = Pavel Karpovich (Y56BH6SLN9)** and signing style = automatic (so Xcode picks the `Apple Development: Pavel Karpovich (Y56BH6SLN9)` identity), **remove the App Sandbox capability** if the template added it (sandbox breaks AX and CGEvent paste for non-App-Store apps), **keep / add Hardened Runtime** so the resulting build is notarization-ready
-- [ ] replace the default app entry point with a `MenuBarExtra` scene showing a minimal label (so we can see the app is running)
-- [ ] confirm `SWIFT_DEFAULT_ISOLATION = MainActor` is set on the app and test targets (Xcode 26 default for new projects); if missing, set it
-- [ ] add a placeholder unit test in the test target so the test phase has at least one case
-- [ ] run `xcodebuild -scheme edith build` — must succeed with zero warnings
-- [ ] run `xcodebuild -scheme edith test` — must pass before Task 2
+- [x] create Xcode project: macOS → App template, SwiftUI lifecycle, product name `edith`, bundle id `space.pkarpovich.edith`, min deployment macOS 26.4, unit-test bundle included
+- [x] set `LSUIElement = YES` in `Info.plist` so the app has no Dock icon
+- [x] in target Signing & Capabilities: set **Team = Pavel Karpovich (Y56BH6SLN9)** and signing style = automatic (so Xcode picks the `Apple Development: Pavel Karpovich (Y56BH6SLN9)` identity), **remove the App Sandbox capability** if the template added it (sandbox breaks AX and CGEvent paste for non-App-Store apps), **keep / add Hardened Runtime** so the resulting build is notarization-ready
+- [x] replace the default app entry point with a `MenuBarExtra` scene showing a minimal label (so we can see the app is running)
+- [x] confirm `SWIFT_DEFAULT_ISOLATION = MainActor` is set on the app and test targets (Xcode 26 default for new projects); if missing, set it
+- [x] add a placeholder unit test in the test target so the test phase has at least one case
+- [x] run `xcodebuild -scheme edith build` — must succeed with zero warnings (wrapped via `make build`; ad-hoc signing for CLI since the Apple Developer account is not enrolled in `xcodebuild`. User's Xcode IDE still uses automatic `Apple Development` signing per target config.)
+- [x] run `xcodebuild -scheme edith test` — must pass before Task 2 (wrapped via `make test`)
+
+**Deviations from original Task 1 wording:**
+- Project files generated from `project.yml` via `xcodegen` (regeneration is reproducible; not needed for IDE use).
+- Unit tests use **Swift Testing** (not XCTest) because `XCTestCase.init()` is declared `nonisolated` in stdlib and clashes with `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. Swift Testing has no such conflict and is Apple's recommended framework under Xcode 26.
+- Wrapped `xcodebuild build` / `xcodebuild test` in `Makefile` with ad-hoc signing overrides (`CODE_SIGN_IDENTITY=-`) so ralphex/CI does not require being signed into an Apple Developer account via Xcode. The project target itself keeps **automatic signing + Apple Development** so the user's Xcode IDE still produces the TCC-stable signed build.
 
 ### Task 2: AskEdithIntent declared and exposed
 
