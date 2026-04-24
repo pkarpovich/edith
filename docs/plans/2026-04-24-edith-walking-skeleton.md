@@ -104,13 +104,13 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 5: Nonactivating overlay panel with mock result
 
-- [ ] add `OverlayPanel.swift` as an `NSPanel` subclass whose designated initializer sets `styleMask` to include `.nonactivatingPanel` (set once at init, never mutated), with `level = .popUpMenu`, `isFloatingPanel = true`, `hidesOnDeactivate = false`
-- [ ] add a SwiftUI `OverlayView` showing two text blocks side-by-side ("Original" and "Result") and an Enter / Esc hint row at the bottom
-- [ ] add `OverlayCoordinator.swift` that wraps the SwiftUI content in `NSHostingView`, puts it in `OverlayPanel`, positions the panel on the active screen, and installs a local key-down monitor mapping Enter to a confirm callback and Esc to a dismiss callback
-- [ ] add `MockTransformer.swift` with a pure function that returns `uppercased()` of its input
-- [ ] wire `AskEdithIntent.perform()` to present the overlay after capture, then suspend via async continuation until the coordinator resolves with either confirmed-with-result or dismissed
-- [ ] add unit tests for `MockTransformer` covering empty string, ASCII, Cyrillic, and emoji-containing inputs
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 6
+- [x] add `OverlayPanel.swift` as an `NSPanel` subclass whose designated initializer sets `styleMask` to include `.nonactivatingPanel` (set once at init, never mutated), with `level = .popUpMenu`, `isFloatingPanel = true`, `hidesOnDeactivate = false`
+- [x] add a SwiftUI `OverlayView` showing two text blocks side-by-side ("Original" and "Result") and an Enter / Esc hint row at the bottom
+- [x] add `OverlayCoordinator.swift` that wraps the SwiftUI content in `NSHostingView`, puts it in `OverlayPanel`, positions the panel on the active screen, and installs a local key-down monitor mapping Enter to a confirm callback and Esc to a dismiss callback
+- [x] add `MockTransformer.swift` with a pure function that returns `uppercased()` of its input
+- [x] wire `AskEdithIntent.perform()` to present the overlay after capture, then suspend via async continuation until the coordinator resolves with either confirmed-with-result or dismissed
+- [x] add unit tests for `MockTransformer` covering empty string, ASCII, Cyrillic, and emoji-containing inputs
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 6
 
 ### Task 6: Paste-back with pasteboard save and restore
 
