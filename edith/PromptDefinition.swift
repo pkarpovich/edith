@@ -55,17 +55,22 @@ extension PromptDefinition {
 
 nonisolated private func stripLeadingCommentBlock(_ text: String) -> String {
     let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
-    var count = 0
+    var commentCount = 0
     for line in lines {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         if trimmed.hasPrefix("#") {
-            count += 1
+            commentCount += 1
         } else {
             break
         }
     }
-    guard count >= 2 else { return text }
-    return lines.dropFirst(count).joined(separator: "\n")
+    guard commentCount >= 2 else { return text }
+    var dropTotal = commentCount
+    while dropTotal < lines.count,
+          lines[dropTotal].trimmingCharacters(in: .whitespaces).isEmpty {
+        dropTotal += 1
+    }
+    return lines.dropFirst(dropTotal).joined(separator: "\n")
 }
 
 nonisolated private func extractFrontmatter(_ text: String) -> (header: String, body: String)? {
@@ -109,7 +114,7 @@ nonisolated private func firstUnknownPlaceholder(in text: String, knownNames: Se
     for match in matches {
         guard match.numberOfRanges >= 2,
               let captured = Range(match.range(at: 1), in: text) else { continue }
-        let name = String(text[captured]).trimmingCharacters(in: .whitespaces)
+        let name = String(text[captured])
         if !knownNames.contains(name) {
             return name
         }

@@ -61,6 +61,7 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
         existingPath: String = ProcessInfo.processInfo.environment["PATH"] ?? ""
     ) -> [String: String?] {
         let extras = [
+            "\(home)/.local/share/mise/shims",
             "/opt/homebrew/bin",
             "\(home)/.bun/bin",
             "\(home)/.local/bin",

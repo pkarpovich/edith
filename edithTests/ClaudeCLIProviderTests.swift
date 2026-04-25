@@ -80,6 +80,7 @@ struct ClaudeCLIProviderEnvironmentOverridesTests {
             return
         }
         let parts = path.split(separator: ":").map(String.init)
+        #expect(parts.contains("/Users/tester/.local/share/mise/shims"))
         #expect(parts.contains("/opt/homebrew/bin"))
         #expect(parts.contains("/Users/tester/.bun/bin"))
         #expect(parts.contains("/Users/tester/.local/bin"))
@@ -131,7 +132,8 @@ struct ClaudeCLIProviderEnvironmentOverridesTests {
             return
         }
         let parts = path.split(separator: ":").map(String.init)
-        #expect(parts.first == "/opt/homebrew/bin")
+        #expect(parts.first == "/Users/tester/.local/share/mise/shims")
+        #expect(parts.contains("/opt/homebrew/bin"))
         #expect(parts.contains("/bin"))
     }
 }

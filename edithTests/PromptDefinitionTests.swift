@@ -162,6 +162,22 @@ struct PromptDefinitionCommentTests {
         let def = PromptDefinition.parse(contents: contents)
         #expect(def.body == contents)
     }
+
+    @Test
+    func blankLineBetweenCommentsAndFrontmatterIsTolerated() {
+        let contents = """
+        # docs
+        # vars
+
+        ---
+        model: haiku
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.model == "haiku")
+        #expect(def.body == "body")
+    }
 }
 
 struct PromptDefinitionNormalizeModelTests {
@@ -234,5 +250,13 @@ struct PromptDefinitionRenderTests {
             variables: ["selection": "use {{name}} in templates"]
         )
         #expect(result == "Fix:\nuse {{name}} in templates")
+    }
+
+    @Test
+    func spacedPlaceholderIsRejectedAsUnknown() {
+        let def = PromptDefinition(model: nil, effort: nil, body: "Fix:\n{{ selection }}")
+        #expect(throws: (any Error).self) {
+            _ = try PromptDefinition.render(definition: def, variables: ["selection": "abc"])
+        }
     }
 }
