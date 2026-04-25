@@ -164,7 +164,6 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					DEEDC3D58122B96E606EF51D = {
-						DevelopmentTeam = Y56BH6SLN9;
 						ProvisioningStyle = Automatic;
 					};
 					FF40D6F6C580A26869800C76 = {
@@ -420,7 +419,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Y56BH6SLN9;
+				DEVELOPMENT_TEAM = GGG699AY79;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = edith/Info.plist;
@@ -442,7 +441,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Y56BH6SLN9;
+				DEVELOPMENT_TEAM = GGG699AY79;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = edith/Info.plist;
