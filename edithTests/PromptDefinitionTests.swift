@@ -225,4 +225,14 @@ struct PromptDefinitionRenderTests {
         let result = try PromptDefinition.render(definition: def, variables: ["selection": "x"])
         #expect(result == "x\n---\nx")
     }
+
+    @Test
+    func selectionContainingPlaceholderSyntaxIsNotMisreadAsUnknownVariable() throws {
+        let def = PromptDefinition(model: nil, effort: nil, body: "Fix:\n{{selection}}")
+        let result = try PromptDefinition.render(
+            definition: def,
+            variables: ["selection": "use {{name}} in templates"]
+        )
+        #expect(result == "Fix:\nuse {{name}} in templates")
+    }
 }

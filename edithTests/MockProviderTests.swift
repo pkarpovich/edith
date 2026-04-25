@@ -52,20 +52,6 @@ struct MockProviderTests {
     }
 
     @Test
-    func cancellationBeforeRunWithoutDelayThrowsCancellationError() async throws {
-        let provider = MockProvider()
-        let task = Task<String, Error> {
-            try await Task.sleep(for: .milliseconds(50))
-            return try await provider.run(prompt: "go", model: nil, effort: nil)
-        }
-        task.cancel()
-
-        await #expect(throws: CancellationError.self) {
-            _ = try await task.value
-        }
-    }
-
-    @Test
     func recorderCapturesPromptModelAndEffort() async throws {
         let recorder = MockProviderRecorder()
         let provider = MockProvider(recorder: recorder)

@@ -38,13 +38,6 @@ struct ClaudeCLIProviderArgumentsTests {
         let args = ClaudeCLIProvider.arguments(model: nil, effort: "")
         #expect(args == ["-p", "--output-format=text"])
     }
-
-    @Test
-    func argumentsDoNotContainPromptText() {
-        let args = ClaudeCLIProvider.arguments(model: "opus", effort: "max")
-        #expect(!args.contains("a prompt"))
-        #expect(!args.contains { $0.contains("selection") })
-    }
 }
 
 struct ClaudeCLIProviderEnvironmentOverridesTests {

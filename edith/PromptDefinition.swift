@@ -23,7 +23,11 @@ extension PromptDefinition {
                 body: body.trimmingCharacters(in: .whitespacesAndNewlines)
             )
         }
-        return PromptDefinition(model: nil, effort: nil, body: stripped)
+        return PromptDefinition(
+            model: nil,
+            effort: nil,
+            body: stripped.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
     }
 
     nonisolated static func normalizeModel(_ input: String) -> String {
@@ -39,11 +43,11 @@ extension PromptDefinition {
         if !body.contains("{{selection}}") {
             body += "\n\n{{selection}}"
         }
+        if let name = firstUnknownPlaceholder(in: body, knownNames: Set(variables.keys)) {
+            throw PromptParserError.unknownVariable(name: name)
+        }
         for (key, value) in variables {
             body = body.replacingOccurrences(of: "{{\(key)}}", with: value)
-        }
-        if let name = firstUnknownPlaceholder(in: body) {
-            throw PromptParserError.unknownVariable(name: name)
         }
         return body
     }
@@ -98,14 +102,17 @@ nonisolated private func parseFlatYAML(_ text: String) -> [String: String]? {
     return result
 }
 
-nonisolated private func firstUnknownPlaceholder(in text: String) -> String? {
-    guard let regex = try? NSRegularExpression(pattern: #"\{\{([^}]+)\}\}"#) else {
-        return nil
-    }
+nonisolated private func firstUnknownPlaceholder(in text: String, knownNames: Set<String>) -> String? {
+    let regex = try! NSRegularExpression(pattern: #"\{\{([^}]+)\}\}"#)
     let range = NSRange(text.startIndex..<text.endIndex, in: text)
-    guard let match = regex.firstMatch(in: text, range: range), match.numberOfRanges >= 2,
-          let captured = Range(match.range(at: 1), in: text) else {
-        return nil
+    let matches = regex.matches(in: text, range: range)
+    for match in matches {
+        guard match.numberOfRanges >= 2,
+              let captured = Range(match.range(at: 1), in: text) else { continue }
+        let name = String(text[captured]).trimmingCharacters(in: .whitespaces)
+        if !knownNames.contains(name) {
+            return name
+        }
     }
-    return String(text[captured]).trimmingCharacters(in: .whitespaces)
+    return nil
 }

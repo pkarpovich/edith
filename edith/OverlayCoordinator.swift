@@ -51,11 +51,9 @@ final class OverlayCoordinator {
         }
     }
 
-    @discardableResult
-    func confirm() -> Bool {
-        guard case .ready(_, let result) = model.state else { return false }
+    func confirm() {
+        guard case .ready(_, let result) = model.state else { return }
         resolve(.confirmed(result))
-        return true
     }
 
     func dismiss() {
