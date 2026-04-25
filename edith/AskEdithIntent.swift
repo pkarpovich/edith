@@ -11,8 +11,13 @@ struct AskEdithIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         Logger.edith.info("AskEdithIntent.perform fired at \(Date().timeIntervalSince1970, privacy: .public)")
+        let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPrompt.isEmpty else {
+            Logger.edith.info("AskEdithIntent: prompt parameter is empty")
+            return .result()
+        }
         let reader = SelectionReader()
-        guard let selection = reader.readSelectedText() else {
+        guard let selection = reader.readSelectedText(), !selection.isEmpty else {
             Logger.edith.info("AskEdithIntent: no selection captured")
             return .result()
         }
@@ -23,7 +28,7 @@ struct AskEdithIntent: AppIntent {
             OverlayCoordinator(initial: .processing(original: selection))
         }
         let provider = ClaudeCLIProvider()
-        let capturedPrompt = prompt
+        let capturedPrompt = trimmedPrompt
 
         let driveTask = Task { @MainActor in
             await AskEdithRunner.drive(

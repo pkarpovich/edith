@@ -13,11 +13,6 @@ enum OverlayState: Equatable, Sendable {
         case .error(let original, _): return original
         }
     }
-
-    var isReady: Bool {
-        if case .ready = self { return true }
-        return false
-    }
 }
 
 @MainActor

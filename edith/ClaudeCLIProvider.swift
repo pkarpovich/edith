@@ -22,11 +22,7 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 if stdout.isEmpty { throw AIProviderError.emptyOutput }
                 return stdout
-            case .exited(let code):
-                let stderr = (result.standardError ?? "")
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                throw AIProviderError.nonZeroExit(code: Int32(code), stderr: stderr)
-            case .signaled(let code):
+            case .exited(let code), .signaled(let code):
                 let stderr = (result.standardError ?? "")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 throw AIProviderError.nonZeroExit(code: Int32(code), stderr: stderr)

@@ -37,8 +37,8 @@ final class OverlayCoordinator {
                 guard let self else { return event }
                 switch event.keyCode {
                 case 36, 76:
-                    if self.confirm() { return nil }
-                    return event
+                    self.confirm()
+                    return nil
                 case 53:
                     self.dismiss()
                     return nil
@@ -49,10 +49,6 @@ final class OverlayCoordinator {
 
             panel.makeKeyAndOrderFront(nil)
         }
-    }
-
-    func transition(to newState: OverlayState) {
-        model.state = newState
     }
 
     @discardableResult

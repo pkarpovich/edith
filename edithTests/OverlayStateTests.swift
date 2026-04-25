@@ -21,13 +21,6 @@ struct OverlayStateTests {
     }
 
     @Test
-    func isReadyTrueOnlyForReady() {
-        #expect(OverlayState.processing(original: "x").isReady == false)
-        #expect(OverlayState.ready(original: "x", result: "X").isReady == true)
-        #expect(OverlayState.error(original: "x", message: "m").isReady == false)
-    }
-
-    @Test
     func equalityHonorsAssociatedValues() {
         #expect(OverlayState.processing(original: "a") == .processing(original: "a"))
         #expect(OverlayState.processing(original: "a") != .processing(original: "b"))

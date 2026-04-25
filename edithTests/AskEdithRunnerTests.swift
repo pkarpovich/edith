@@ -132,8 +132,7 @@ struct AskEdithRunnerFormatTests {
         let message = AskEdithRunner.format(
             error: AIProviderError.nonZeroExit(code: 1, stderr: "")
         )
-        #expect(message.contains("1"))
-        #expect(!message.contains(":"))
+        #expect(message == "Claude exited with code 1.")
     }
 
     @Test
