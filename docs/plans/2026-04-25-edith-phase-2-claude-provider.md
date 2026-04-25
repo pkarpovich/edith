@@ -78,13 +78,13 @@ Because Claude responses can take 3–30 seconds, the overlay becomes stateful: 
 
 ### Task 4: ClaudeCLIProvider and intent integration
 
-- [ ] add `edith/ClaudeCLIProvider.swift` using `swift-subprocess` to invoke `claude -p <prompt> --output-format=text` with the captured selection piped to stdin; collect stdout to a `String`, trim trailing newline
-- [ ] map subprocess errors to `AIProviderError`: missing executable → `notFound`; non-zero exit → `nonZeroExit(code, stderr)`; cancellation → `cancelled`; empty stdout → `emptyOutput`
-- [ ] add `@Parameter(title: "Prompt") var prompt: String` to `AskEdithIntent`; remove the `MockTransformer` call from the intent
-- [ ] wire `AskEdithIntent.perform()` to: capture → present overlay in `.processing(original)` → start a `Task` invoking `ClaudeCLIProvider().run(prompt:input:)` → on success transition to `.ready(original, result)` → on error transition to `.error(original, message)` → await user `confirm()` (paste) or `dismiss()` (cancel the in-flight Task if still processing)
-- [ ] delete `edith/MockTransformer.swift` and its test file once nothing references them
-- [ ] write unit tests using a fake `AIProvider` injected into the intent (or its core logic factored into a helper): success path produces `.ready` state with provider output; provider throws → `.error` state with formatted message; cancellation flips to dismissal cleanly
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass
+- [x] add `edith/ClaudeCLIProvider.swift` using `swift-subprocess` to invoke `claude -p <prompt> --output-format=text` with the captured selection piped to stdin; collect stdout to a `String`, trim trailing newline
+- [x] map subprocess errors to `AIProviderError`: missing executable → `notFound`; non-zero exit → `nonZeroExit(code, stderr)`; cancellation → `cancelled`; empty stdout → `emptyOutput`
+- [x] add `@Parameter(title: "Prompt") var prompt: String` to `AskEdithIntent`; remove the `MockTransformer` call from the intent
+- [x] wire `AskEdithIntent.perform()` to: capture → present overlay in `.processing(original)` → start a `Task` invoking `ClaudeCLIProvider().run(prompt:input:)` → on success transition to `.ready(original, result)` → on error transition to `.error(original, message)` → await user `confirm()` (paste) or `dismiss()` (cancel the in-flight Task if still processing)
+- [x] delete `edith/MockTransformer.swift` and its test file once nothing references them
+- [x] write unit tests using a fake `AIProvider` injected into the intent (or its core logic factored into a helper): success path produces `.ready` state with provider output; provider throws → `.error` state with formatted message; cancellation flips to dismissal cleanly
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass
 
 ### Task 5: Verify automated acceptance criteria
 
