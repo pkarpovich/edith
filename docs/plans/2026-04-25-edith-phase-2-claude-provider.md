@@ -88,10 +88,10 @@ Because Claude responses can take 3–30 seconds, the overlay becomes stateful: 
 
 ### Task 5: Verify automated acceptance criteria
 
-- [ ] `xcodebuild -scheme edith build` passes with zero warnings
-- [ ] `xcodebuild -scheme edith test` passes with all unit tests green
-- [ ] all task checkboxes above are marked `[x]`
-- [ ] no `TODO` / `FIXME` left in files created or modified in Tasks 1–4
+- [x] `xcodebuild -scheme edith build` passes with zero warnings
+- [x] `xcodebuild -scheme edith test` passes with all unit tests green
+- [x] all task checkboxes above are marked `[x]`
+- [x] no `TODO` / `FIXME` left in files created or modified in Tasks 1–4
 
 ## Technical Details
 
