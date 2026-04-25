@@ -8,8 +8,9 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
         do {
             let result = try await Subprocess.run(
                 .name("claude"),
-                arguments: ["-p", prompt, "--output-format=text"],
+                arguments: Arguments(Self.arguments(model: model, effort: effort)),
                 environment: Self.environment(),
+                input: .string(prompt),
                 output: .string(limit: Self.outputLimit),
                 error: .string(limit: Self.outputLimit)
             )
@@ -42,8 +43,23 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
         }
     }
 
-    static func environment() -> Environment {
-        let home = ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory()
+    static func arguments(model: String?, effort: String?) -> [String] {
+        var args: [String] = ["-p", "--output-format=text"]
+        if let model, !model.isEmpty {
+            args.append("--model")
+            args.append(model)
+        }
+        if let effort, !effort.isEmpty {
+            args.append("--effort")
+            args.append(effort)
+        }
+        return args
+    }
+
+    static func environmentOverrides(
+        home: String = ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory(),
+        existingPath: String = ProcessInfo.processInfo.environment["PATH"] ?? ""
+    ) -> [String: String?] {
         let extras = [
             "/opt/homebrew/bin",
             "\(home)/.bun/bin",
@@ -52,13 +68,27 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
             "/usr/bin",
             "/bin",
         ]
-        let existing = ProcessInfo.processInfo.environment["PATH"] ?? ""
-        let parts = existing.split(separator: ":", omittingEmptySubsequences: true).map(String.init)
+        let parts = existingPath.split(separator: ":", omittingEmptySubsequences: true).map(String.init)
         var seen = Set<String>()
         var combined: [String] = []
         for path in parts + extras where seen.insert(path).inserted {
             combined.append(path)
         }
-        return .inherit.updating([Environment.Key("PATH"): combined.joined(separator: ":")])
+        return [
+            "PATH": combined.joined(separator: ":"),
+            "ANTHROPIC_API_KEY": nil,
+            "CLAUDECODE": nil,
+        ]
+    }
+
+    static func environment() -> Environment {
+        let overrides = environmentOverrides()
+        let pathValue = overrides["PATH"].flatMap { $0 } ?? ""
+        let dict: [Environment.Key: String?] = [
+            "PATH": pathValue,
+            "ANTHROPIC_API_KEY": nil,
+            "CLAUDECODE": nil,
+        ]
+        return .inherit.updating(dict)
     }
 }

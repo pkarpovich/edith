@@ -86,11 +86,11 @@ The pattern is also provider-agnostic — when Phase 3 adds `FoundationModelsPro
 
 ### Task 3: ClaudeCLIProvider switches to stdin and accepts model/effort
 
-- [ ] update `edith/ClaudeCLIProvider.swift` so the prompt goes through stdin only; remove the positional `prompt` argument from `arguments`; `arguments` becomes `["-p", "--output-format=text"]` plus optional `["--model", model]` and `["--effort", effort]` if non-nil
-- [ ] in `Self.environment()`, additionally remove `ANTHROPIC_API_KEY` and `CLAUDECODE` keys from the inherited environment before adding them back (mirror ralphex `filterEnv` rationale)
-- [ ] keep PATH augmentation logic as-is
-- [ ] adjust unit / integration test scaffolding if any references the old argv shape
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
+- [x] update `edith/ClaudeCLIProvider.swift` so the prompt goes through stdin only; remove the positional `prompt` argument from `arguments`; `arguments` becomes `["-p", "--output-format=text"]` plus optional `["--model", model]` and `["--effort", effort]` if non-nil
+- [x] in `Self.environment()`, additionally remove `ANTHROPIC_API_KEY` and `CLAUDECODE` keys from the inherited environment before adding them back (mirror ralphex `filterEnv` rationale)
+- [x] keep PATH augmentation logic as-is
+- [x] adjust unit / integration test scaffolding if any references the old argv shape
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
 
 ### Task 4: AskEdithIntent path parameter and runner wiring
 
