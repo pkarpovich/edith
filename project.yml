@@ -1,0 +1,81 @@
+name: edith
+options:
+  bundleIdPrefix: space.pkarpovich
+  deploymentTarget:
+    macOS: "26.4"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  xcodeVersion: "26.4"
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: Y56BH6SLN9
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_UPCOMING_FEATURE_INFERISOLATEDCONFORMANCES: YES
+    CLANG_ENABLE_MODULES: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  edith:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.4"
+    sources:
+      - path: edith
+    info:
+      path: edith/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: edith
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSHumanReadableCopyright: ""
+        NSAccessibilityUsageDescription: "edith reads the currently selected text from the active app to transform it in place."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: space.pkarpovich.edith
+        PRODUCT_NAME: edith
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: Y56BH6SLN9
+        ENABLE_HARDENED_RUNTIME: YES
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: edith/Info.plist
+        MACOSX_DEPLOYMENT_TARGET: "26.4"
+
+  edithTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "26.4"
+    sources:
+      - path: edithTests
+    dependencies:
+      - target: edith
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: space.pkarpovich.edithTests
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: Y56BH6SLN9
+        MACOSX_DEPLOYMENT_TARGET: "26.4"
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  edith:
+    build:
+      targets:
+        edith: all
+        edithTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - edithTests
+    archive:
+      config: Release

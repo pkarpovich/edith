@@ -62,65 +62,70 @@ Greenfield native macOS app `edith`. Phase 1 is a walking skeleton that validate
 
 ### Task 1: Xcode project skeleton
 
-- [ ] create Xcode project: macOS → App template, SwiftUI lifecycle, product name `edith`, bundle id `space.pkarpovich.edith`, min deployment macOS 26.4, unit-test bundle included
-- [ ] set `LSUIElement = YES` in `Info.plist` so the app has no Dock icon
-- [ ] in target Signing & Capabilities: set **Team = Pavel Karpovich (Y56BH6SLN9)** and signing style = automatic (so Xcode picks the `Apple Development: Pavel Karpovich (Y56BH6SLN9)` identity), **remove the App Sandbox capability** if the template added it (sandbox breaks AX and CGEvent paste for non-App-Store apps), **keep / add Hardened Runtime** so the resulting build is notarization-ready
-- [ ] replace the default app entry point with a `MenuBarExtra` scene showing a minimal label (so we can see the app is running)
-- [ ] confirm `SWIFT_DEFAULT_ISOLATION = MainActor` is set on the app and test targets (Xcode 26 default for new projects); if missing, set it
-- [ ] add a placeholder unit test in the test target so the test phase has at least one case
-- [ ] run `xcodebuild -scheme edith build` — must succeed with zero warnings
-- [ ] run `xcodebuild -scheme edith test` — must pass before Task 2
+- [x] create Xcode project: macOS → App template, SwiftUI lifecycle, product name `edith`, bundle id `space.pkarpovich.edith`, min deployment macOS 26.4, unit-test bundle included
+- [x] set `LSUIElement = YES` in `Info.plist` so the app has no Dock icon
+- [x] in target Signing & Capabilities: set **Team = Pavel Karpovich (Y56BH6SLN9)** and signing style = automatic (so Xcode picks the `Apple Development: Pavel Karpovich (Y56BH6SLN9)` identity), **remove the App Sandbox capability** if the template added it (sandbox breaks AX and CGEvent paste for non-App-Store apps), **keep / add Hardened Runtime** so the resulting build is notarization-ready
+- [x] replace the default app entry point with a `MenuBarExtra` scene showing a minimal label (so we can see the app is running)
+- [x] confirm `SWIFT_DEFAULT_ISOLATION = MainActor` is set on the app and test targets (Xcode 26 default for new projects); if missing, set it
+- [x] add a placeholder unit test in the test target so the test phase has at least one case
+- [x] run `xcodebuild -scheme edith build` — must succeed with zero warnings (wrapped via `make build`; ad-hoc signing for CLI since the Apple Developer account is not enrolled in `xcodebuild`. User's Xcode IDE still uses automatic `Apple Development` signing per target config.)
+- [x] run `xcodebuild -scheme edith test` — must pass before Task 2 (wrapped via `make test`)
+
+**Deviations from original Task 1 wording:**
+- Project files generated from `project.yml` via `xcodegen` (regeneration is reproducible; not needed for IDE use).
+- Unit tests use **Swift Testing** (not XCTest) because `XCTestCase.init()` is declared `nonisolated` in stdlib and clashes with `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. Swift Testing has no such conflict and is Apple's recommended framework under Xcode 26.
+- Wrapped `xcodebuild build` / `xcodebuild test` in `Makefile` with ad-hoc signing overrides (`CODE_SIGN_IDENTITY=-`) so ralphex/CI does not require being signed into an Apple Developer account via Xcode. The project target itself keeps **automatic signing + Apple Development** so the user's Xcode IDE still produces the TCC-stable signed build.
 
 ### Task 2: AskEdithIntent declared and exposed
 
-- [ ] add a file `AskEdithIntent.swift` declaring a struct conforming to `AppIntent` with `title` set to the localized string `"Ask Edith"`, `supportedModes` set to `[.background]`, and a `perform()` method that logs a timestamped message via `os.Logger` and returns an empty `.result()`
-- [ ] add a file `EdithShortcutsProvider.swift` declaring a type conforming to `AppShortcutsProvider` that lists `AskEdithIntent` so the action registers with Shortcuts.app automatically on first launch
-- [ ] add a `Logger` extension with a stable subsystem (bundle id) and a `edith` category, used from `perform()`
-- [ ] add unit tests asserting `AskEdithIntent.title` equals the expected string and `AskEdithIntent.supportedModes` equals `[.background]`
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
+- [x] add a file `AskEdithIntent.swift` declaring a struct conforming to `AppIntent` with `title` set to the localized string `"Ask Edith"`, `supportedModes` set to `[.background]`, and a `perform()` method that logs a timestamped message via `os.Logger` and returns an empty `.result()`
+- [x] add a file `EdithShortcutsProvider.swift` declaring a type conforming to `AppShortcutsProvider` that lists `AskEdithIntent` so the action registers with Shortcuts.app automatically on first launch
+- [x] add a `Logger` extension with a stable subsystem (bundle id) and a `edith` category, used from `perform()` (marked `nonisolated` since `NonisolatedNonsendingByDefault` makes `perform()` nonisolated and cannot touch a MainActor-isolated static)
+- [x] add unit tests asserting `AskEdithIntent.title` equals the expected string and `AskEdithIntent.supportedModes` equals `[.background]`
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
 
 ### Task 3: Accessibility selection reader
 
-- [ ] add a file `SelectionReader.swift` with a type that reads the current selection by chaining AX attribute lookups: system-wide element → `kAXFocusedApplicationAttribute` → `kAXFocusedUIElementAttribute` → `kAXSelectedTextAttribute`
-- [ ] treat `AXError.apiDisabled`, missing attributes, wrong types, and empty strings as "no selection" (return `nil` with a log entry)
-- [ ] factor the AX calls behind a small protocol so tests can inject a fake that returns canned errors or values without touching real APIs
-- [ ] call the reader from `AskEdithIntent.perform()` and log the first 200 characters of the captured text with private-data privacy classification
-- [ ] add unit tests covering the reader branches via the fake: API disabled → `nil`; missing attribute → `nil`; wrong type → `nil`; empty string → `nil`; valid string → returned as a Swift `String`
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
+- [x] add a file `SelectionReader.swift` with a type that reads the current selection by chaining AX attribute lookups: system-wide element → `kAXFocusedApplicationAttribute` → `kAXFocusedUIElementAttribute` → `kAXSelectedTextAttribute`
+- [x] treat `AXError.apiDisabled`, missing attributes, wrong types, and empty strings as "no selection" (return `nil` with a log entry)
+- [x] factor the AX calls behind a small protocol so tests can inject a fake that returns canned errors or values without touching real APIs
+- [x] call the reader from `AskEdithIntent.perform()` and log the first 200 characters of the captured text with private-data privacy classification
+- [x] add unit tests covering the reader branches via the fake: API disabled → `nil`; missing attribute → `nil`; wrong type → `nil`; empty string → `nil`; valid string → returned as a Swift `String`
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
 
 ### Task 4: Accessibility permission check and onboarding window
 
-- [ ] add a file `PermissionsCheck.swift` exposing a boolean property that wraps `AXIsProcessTrustedWithOptions` with the no-prompt option, so checks do not re-trigger the system prompt
-- [ ] add a constant `AccessibilityDeepLink` holding the `x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility` URL
-- [ ] add a SwiftUI `OnboardingView` with a short message and a button that opens the deep link via `NSWorkspace`
-- [ ] extend the app scene to show an onboarding `Window` on launch iff AX is not granted, and to show a status line ("Accessibility: granted" / "not granted") inside the `MenuBarExtra`
-- [ ] add unit tests asserting the deep-link URL string matches the expected constant and the status-formatting helper returns the expected two outputs for true and false
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 5
+- [x] add a file `PermissionsCheck.swift` exposing a boolean property that wraps `AXIsProcessTrustedWithOptions` with the no-prompt option, so checks do not re-trigger the system prompt
+- [x] add a constant `AccessibilityDeepLink` holding the `x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility` URL
+- [x] add a SwiftUI `OnboardingView` with a short message and a button that opens the deep link via `NSWorkspace`
+- [x] extend the app scene to show an onboarding `Window` on launch iff AX is not granted, and to show a status line ("Accessibility: granted" / "not granted") inside the `MenuBarExtra`
+- [x] add unit tests asserting the deep-link URL string matches the expected constant and the status-formatting helper returns the expected two outputs for true and false
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 5
 
 ### Task 5: Nonactivating overlay panel with mock result
 
-- [ ] add `OverlayPanel.swift` as an `NSPanel` subclass whose designated initializer sets `styleMask` to include `.nonactivatingPanel` (set once at init, never mutated), with `level = .popUpMenu`, `isFloatingPanel = true`, `hidesOnDeactivate = false`
-- [ ] add a SwiftUI `OverlayView` showing two text blocks side-by-side ("Original" and "Result") and an Enter / Esc hint row at the bottom
-- [ ] add `OverlayCoordinator.swift` that wraps the SwiftUI content in `NSHostingView`, puts it in `OverlayPanel`, positions the panel on the active screen, and installs a local key-down monitor mapping Enter to a confirm callback and Esc to a dismiss callback
-- [ ] add `MockTransformer.swift` with a pure function that returns `uppercased()` of its input
-- [ ] wire `AskEdithIntent.perform()` to present the overlay after capture, then suspend via async continuation until the coordinator resolves with either confirmed-with-result or dismissed
-- [ ] add unit tests for `MockTransformer` covering empty string, ASCII, Cyrillic, and emoji-containing inputs
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 6
+- [x] add `OverlayPanel.swift` as an `NSPanel` subclass whose designated initializer sets `styleMask` to include `.nonactivatingPanel` (set once at init, never mutated), with `level = .popUpMenu`, `isFloatingPanel = true`, `hidesOnDeactivate = false`
+- [x] add a SwiftUI `OverlayView` showing two text blocks side-by-side ("Original" and "Result") and an Enter / Esc hint row at the bottom
+- [x] add `OverlayCoordinator.swift` that wraps the SwiftUI content in `NSHostingView`, puts it in `OverlayPanel`, positions the panel on the active screen, and installs a local key-down monitor mapping Enter to a confirm callback and Esc to a dismiss callback
+- [x] add `MockTransformer.swift` with a pure function that returns `uppercased()` of its input
+- [x] wire `AskEdithIntent.perform()` to present the overlay after capture, then suspend via async continuation until the coordinator resolves with either confirmed-with-result or dismissed
+- [x] add unit tests for `MockTransformer` covering empty string, ASCII, Cyrillic, and emoji-containing inputs
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 6
 
 ### Task 6: Paste-back with pasteboard save and restore
 
-- [ ] add `PasteboardSnapshot.swift` as a pure value type that captures the types and payloads of a given `NSPasteboard`'s items and can re-apply them to a pasteboard later; pasteboard is injected so tests can target a named test pasteboard instead of `.general`
-- [ ] add `Paster.swift` that, given a string: captures a snapshot of `.general`, writes the string as `.string`, posts synthesized ⌘V key-down and key-up CGEvents at the HID tap, then restores the snapshot after ~250 ms
-- [ ] connect the overlay's confirm callback to `Paster.paste(result)` and have the coordinator dismiss the panel afterwards
-- [ ] add unit tests that use a dedicated test pasteboard (not `.general`) to verify snapshot round-trip: write items, snapshot, mutate, apply, verify restored types and payloads
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 7
+- [x] add `PasteboardSnapshot.swift` as a pure value type that captures the types and payloads of a given `NSPasteboard`'s items and can re-apply them to a pasteboard later; pasteboard is injected so tests can target a named test pasteboard instead of `.general`
+- [x] add `Paster.swift` that, given a string: captures a snapshot of `.general`, writes the string as `.string`, posts synthesized ⌘V key-down and key-up CGEvents at the HID tap, then restores the snapshot after ~250 ms
+- [x] connect the overlay's confirm callback to `Paster.paste(result)` and have the coordinator dismiss the panel afterwards
+- [x] add unit tests that use a dedicated test pasteboard (not `.general`) to verify snapshot round-trip: write items, snapshot, mutate, apply, verify restored types and payloads
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 7
 
 ### Task 7: Verify automated acceptance criteria
 
-- [ ] `xcodebuild -scheme edith build` passes with zero warnings
-- [ ] `xcodebuild -scheme edith test` passes with all unit tests green
-- [ ] all task checkboxes above are marked `[x]`
-- [ ] no `TODO` / `FIXME` left in files created in Tasks 1–6
+- [x] `xcodebuild -scheme edith build` passes with zero warnings
+- [x] `xcodebuild -scheme edith test` passes with all unit tests green
+- [x] all task checkboxes above are marked `[x]`
+- [x] no `TODO` / `FIXME` left in files created in Tasks 1–6
 
 ## Technical Details
 
