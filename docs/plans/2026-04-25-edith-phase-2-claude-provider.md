@@ -59,12 +59,12 @@ Because Claude responses can take 3–30 seconds, the overlay becomes stateful: 
 
 ### Task 2: Define AIProvider protocol and MockProvider
 
-- [ ] add `edith/AIProvider.swift` declaring a `Sendable` protocol with one async-throws method that takes a prompt string and an input string and returns the transformed string
-- [ ] declare a small `AIProviderError` enum covering `notFound`, `nonZeroExit(code: Int32, stderr: String)`, `emptyOutput`, `cancelled` so the overlay can render meaningful messages
-- [ ] add `edith/MockProvider.swift`: an `AIProvider` that returns `input.uppercased()` after an injectable delay, used for tests and as a fallback in DEBUG when `claude` is missing
-- [ ] write unit tests for `MockProvider`: returns uppercased input, honors cancellation via `Task.cancel`, respects injected delay
-- [ ] keep `MockTransformer.swift` and its tests for now — `OverlayView` still references it; it goes away in Task 4
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass
+- [x] add `edith/AIProvider.swift` declaring a `Sendable` protocol with one async-throws method that takes a prompt string and an input string and returns the transformed string
+- [x] declare a small `AIProviderError` enum covering `notFound`, `nonZeroExit(code: Int32, stderr: String)`, `emptyOutput`, `cancelled` so the overlay can render meaningful messages
+- [x] add `edith/MockProvider.swift`: an `AIProvider` that returns `input.uppercased()` after an injectable delay, used for tests and as a fallback in DEBUG when `claude` is missing
+- [x] write unit tests for `MockProvider`: returns uppercased input, honors cancellation via `Task.cancel`, respects injected delay
+- [x] keep `MockTransformer.swift` and its tests for now — `OverlayView` still references it; it goes away in Task 4
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass
 
 ### Task 3: Refactor overlay into a state machine
 

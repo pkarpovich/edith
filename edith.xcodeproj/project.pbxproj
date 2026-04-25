@@ -10,10 +10,12 @@
 		0413F2D500FE661391C8C027 /* PasteboardSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B33818881AAE4DAF3989D60 /* PasteboardSnapshot.swift */; };
 		05EEFA36EC89C12F0270A043 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A02E0A5E38A2A6DBB988EF4B /* OverlayPanel.swift */; };
 		0F669C2258B44E108F098711 /* PasteboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2806009A9138FA1490ABA8E /* PasteboardSnapshotTests.swift */; };
+		18B90B0856C12673AFC8C898 /* MockProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */; };
 		1C165CD3149CE9BF052FA725 /* AskEdithIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */; };
 		2390122FD2903E93A51468D0 /* SelectionReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D8BADCE5161DE504EE7C76 /* SelectionReader.swift */; };
 		277C207BE5FDEFEF3917F54A /* PermissionsCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = E371F2FF861AD01B27568073 /* PermissionsCheck.swift */; };
 		28A9DA3BEBC462FF3367BA5C /* Subprocess in Frameworks */ = {isa = PBXBuildFile; productRef = 03FF6FD9E4B924855747F9D2 /* Subprocess */; };
+		392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */; };
 		4844E0B2FB3230A8D9C35AD5 /* Paster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */; };
 		4A85985E22AEA942B5E2305D /* MockTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C436BEB712B29E527BDA9F6F /* MockTransformer.swift */; };
 		6194049377091BE4B90DBED9 /* PlaceholderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FAFF56CD97B150CDC0DCDE3 /* PlaceholderTests.swift */; };
@@ -27,6 +29,7 @@
 		DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573A2B1295778B262D7F7943 /* EdithApp.swift */; };
 		E58BF8FF676E773D12F0773D /* OverlayCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99BE0CBADEBEAF53E43FDF67 /* OverlayCoordinator.swift */; };
 		ED43ECCA5D819F96949A1DA4 /* AskEdithIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */; };
+		F6A18C4EBAA4C61A914734CE /* MockProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C24D500520A25F2EDD09F72 /* MockProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,12 +49,14 @@
 		42E9440F0BE8E8028D8FEB78 /* SelectionReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReaderTests.swift; sourceTree = "<group>"; };
 		4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Paster.swift; sourceTree = "<group>"; };
 		573A2B1295778B262D7F7943 /* EdithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdithApp.swift; sourceTree = "<group>"; };
+		6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProviderTests.swift; sourceTree = "<group>"; };
 		7AB4B1C4DF7FEBE7981091AE /* edithTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = edithTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithIntentTests.swift; sourceTree = "<group>"; };
 		89F88D6E153A88FB2B1AE446 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		93A4AAC72B151441FA8092C6 /* PermissionsCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheckTests.swift; sourceTree = "<group>"; };
 		99BE0CBADEBEAF53E43FDF67 /* OverlayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayCoordinator.swift; sourceTree = "<group>"; };
 		9B33818881AAE4DAF3989D60 /* PasteboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardSnapshot.swift; sourceTree = "<group>"; };
+		9C24D500520A25F2EDD09F72 /* MockProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProvider.swift; sourceTree = "<group>"; };
 		9FAFF56CD97B150CDC0DCDE3 /* PlaceholderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTests.swift; sourceTree = "<group>"; };
 		A02E0A5E38A2A6DBB988EF4B /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Edith.swift"; sourceTree = "<group>"; };
@@ -62,6 +67,7 @@
 		D317F4BB16F73C404C0C973C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E371F2FF861AD01B27568073 /* PermissionsCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheck.swift; sourceTree = "<group>"; };
 		E4547F1774D1617FF97DB5D2 /* edith.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = edith.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,11 +94,13 @@
 		6465577BF073910ACAAE4251 /* edith */ = {
 			isa = PBXGroup;
 			children = (
+				F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */,
 				00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */,
 				573A2B1295778B262D7F7943 /* EdithApp.swift */,
 				097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */,
 				D317F4BB16F73C404C0C973C /* Info.plist */,
 				C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */,
+				9C24D500520A25F2EDD09F72 /* MockProvider.swift */,
 				C436BEB712B29E527BDA9F6F /* MockTransformer.swift */,
 				C3810FBBB5E0EE5BBB138E5F /* OnboardingView.swift */,
 				99BE0CBADEBEAF53E43FDF67 /* OverlayCoordinator.swift */,
@@ -110,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */,
+				6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */,
 				0F3A4FFA3B0B45B8884F33AD /* MockTransformerTests.swift */,
 				D2806009A9138FA1490ABA8E /* PasteboardSnapshotTests.swift */,
 				93A4AAC72B151441FA8092C6 /* PermissionsCheckTests.swift */,
@@ -215,10 +224,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */,
 				1C165CD3149CE9BF052FA725 /* AskEdithIntent.swift in Sources */,
 				DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */,
 				630B519FAFD5876F0791A7CD /* EdithShortcutsProvider.swift in Sources */,
 				AF027E74B9F22408ACA24B5B /* Logger+Edith.swift in Sources */,
+				F6A18C4EBAA4C61A914734CE /* MockProvider.swift in Sources */,
 				4A85985E22AEA942B5E2305D /* MockTransformer.swift in Sources */,
 				984FC8616913D9727AA2C727 /* OnboardingView.swift in Sources */,
 				E58BF8FF676E773D12F0773D /* OverlayCoordinator.swift in Sources */,
@@ -236,6 +247,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED43ECCA5D819F96949A1DA4 /* AskEdithIntentTests.swift in Sources */,
+				18B90B0856C12673AFC8C898 /* MockProviderTests.swift in Sources */,
 				7E65439D1B991643C8D4E947 /* MockTransformerTests.swift in Sources */,
 				0F669C2258B44E108F098711 /* PasteboardSnapshotTests.swift in Sources */,
 				CFD708C8F6E575EEB6FA7B83 /* PermissionsCheckTests.swift in Sources */,
