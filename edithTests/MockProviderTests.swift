@@ -4,26 +4,26 @@ import Testing
 
 struct MockProviderTests {
     @Test
-    func returnsUppercasedInputWithoutDelay() async throws {
+    func returnsUppercasedPromptWithoutDelay() async throws {
         let provider = MockProvider()
-        let output = try await provider.run(prompt: "any prompt", input: "hello edith")
+        let output = try await provider.run(prompt: "hello edith", model: nil, effort: nil)
         #expect(output == "HELLO EDITH")
     }
 
     @Test
-    func emptyInputReturnsEmpty() async throws {
+    func emptyPromptReturnsEmpty() async throws {
         let provider = MockProvider()
-        let output = try await provider.run(prompt: "", input: "")
+        let output = try await provider.run(prompt: "", model: nil, effort: nil)
         #expect(output == "")
     }
 
     @Test
-    func ignoresPromptValue() async throws {
+    func returnsUppercasedPromptIgnoringModelAndEffort() async throws {
         let provider = MockProvider()
-        let a = try await provider.run(prompt: "translate to russian", input: "hi")
-        let b = try await provider.run(prompt: "make it shorter", input: "hi")
+        let a = try await provider.run(prompt: "go", model: "haiku", effort: "low")
+        let b = try await provider.run(prompt: "go", model: "opus", effort: "high")
         #expect(a == b)
-        #expect(a == "HI")
+        #expect(a == "GO")
     }
 
     @Test
@@ -31,7 +31,7 @@ struct MockProviderTests {
         let delay: Duration = .milliseconds(100)
         let provider = MockProvider(delay: delay)
         let start = ContinuousClock.now
-        let output = try await provider.run(prompt: "p", input: "go")
+        let output = try await provider.run(prompt: "go", model: nil, effort: nil)
         let elapsed = ContinuousClock.now - start
         #expect(output == "GO")
         #expect(elapsed >= delay)
@@ -41,7 +41,7 @@ struct MockProviderTests {
     func cancellationDuringDelayThrowsCancellationError() async throws {
         let provider = MockProvider(delay: .seconds(5))
         let task = Task<String, Error> {
-            try await provider.run(prompt: "p", input: "go")
+            try await provider.run(prompt: "go", model: nil, effort: nil)
         }
         try await Task.sleep(for: .milliseconds(20))
         task.cancel()
@@ -56,12 +56,55 @@ struct MockProviderTests {
         let provider = MockProvider()
         let task = Task<String, Error> {
             try await Task.sleep(for: .milliseconds(50))
-            return try await provider.run(prompt: "p", input: "go")
+            return try await provider.run(prompt: "go", model: nil, effort: nil)
         }
         task.cancel()
 
         await #expect(throws: CancellationError.self) {
             _ = try await task.value
         }
+    }
+
+    @Test
+    func recorderCapturesPromptModelAndEffort() async throws {
+        let recorder = MockProviderRecorder()
+        let provider = MockProvider(recorder: recorder)
+        _ = try await provider.run(prompt: "fix it", model: "haiku", effort: "low")
+
+        let calls = await recorder.calls
+        #expect(calls.count == 1)
+        #expect(calls.first?.prompt == "fix it")
+        #expect(calls.first?.model == "haiku")
+        #expect(calls.first?.effort == "low")
+    }
+
+    @Test
+    func recorderCapturesNilModelAndEffort() async throws {
+        let recorder = MockProviderRecorder()
+        let provider = MockProvider(recorder: recorder)
+        _ = try await provider.run(prompt: "do it", model: nil, effort: nil)
+
+        let calls = await recorder.calls
+        #expect(calls.count == 1)
+        #expect(calls.first?.model == nil)
+        #expect(calls.first?.effort == nil)
+    }
+
+    @Test
+    func recorderCapturesMultipleCallsInOrder() async throws {
+        let recorder = MockProviderRecorder()
+        let provider = MockProvider(recorder: recorder)
+        _ = try await provider.run(prompt: "first", model: "haiku", effort: nil)
+        _ = try await provider.run(prompt: "second", model: "sonnet", effort: "medium")
+        _ = try await provider.run(prompt: "third", model: nil, effort: "high")
+
+        let calls = await recorder.calls
+        #expect(calls.count == 3)
+        #expect(calls[0].prompt == "first")
+        #expect(calls[0].model == "haiku")
+        #expect(calls[1].prompt == "second")
+        #expect(calls[1].effort == "medium")
+        #expect(calls[2].prompt == "third")
+        #expect(calls[2].effort == "high")
     }
 }

@@ -4,7 +4,7 @@ import Testing
 
 private struct ConstantProvider: AIProvider {
     let output: String
-    func run(prompt: String, input: String) async throws -> String {
+    func run(prompt: String, model: String?, effort: String?) async throws -> String {
         try Task.checkCancellation()
         return output
     }
@@ -12,16 +12,16 @@ private struct ConstantProvider: AIProvider {
 
 private struct ThrowingProvider: AIProvider {
     let error: any Error
-    func run(prompt: String, input: String) async throws -> String {
+    func run(prompt: String, model: String?, effort: String?) async throws -> String {
         throw error
     }
 }
 
 private struct DelayingProvider: AIProvider {
     let delay: Duration
-    func run(prompt: String, input: String) async throws -> String {
+    func run(prompt: String, model: String?, effort: String?) async throws -> String {
         try await Task.sleep(for: delay)
-        return input
+        return prompt
     }
 }
 

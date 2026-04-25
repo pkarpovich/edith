@@ -4,13 +4,12 @@ import Subprocess
 nonisolated struct ClaudeCLIProvider: AIProvider {
     private static let outputLimit: Int = 1 * 1024 * 1024
 
-    func run(prompt: String, input: String) async throws -> String {
+    func run(prompt: String, model: String?, effort: String?) async throws -> String {
         do {
             let result = try await Subprocess.run(
                 .name("claude"),
                 arguments: ["-p", prompt, "--output-format=text"],
                 environment: Self.environment(),
-                input: .string(input),
                 output: .string(limit: Self.outputLimit),
                 error: .string(limit: Self.outputLimit)
             )

@@ -11,7 +11,7 @@ nonisolated enum AskEdithRunner {
         model: OverlayStateModel
     ) async {
         do {
-            let result = try await provider.run(prompt: prompt, input: input)
+            let result = try await provider.run(prompt: prompt, model: nil, effort: nil)
             try Task.checkCancellation()
             model.state = .ready(original: input, result: result)
         } catch is CancellationError {

@@ -78,11 +78,11 @@ The pattern is also provider-agnostic — when Phase 3 adds `FoundationModelsPro
 
 ### Task 2: AIProvider protocol gets model and effort
 
-- [ ] update `edith/AIProvider.swift`: protocol method becomes `func run(prompt: String, model: String?, effort: String?) async throws -> String`; drop `input` parameter
-- [ ] update `edith/MockProvider.swift` to match the new signature; behavior remains "return uppercased prompt", `model` and `effort` recorded internally for tests if convenient
-- [ ] update `MockProviderTests` accordingly
-- [ ] add unit tests verifying `model` / `effort` propagate through to whatever recording surface MockProvider exposes
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
+- [x] update `edith/AIProvider.swift`: protocol method becomes `func run(prompt: String, model: String?, effort: String?) async throws -> String`; drop `input` parameter
+- [x] update `edith/MockProvider.swift` to match the new signature; behavior remains "return uppercased prompt", `model` and `effort` recorded internally for tests if convenient
+- [x] update `MockProviderTests` accordingly
+- [x] add unit tests verifying `model` / `effort` propagate through to whatever recording surface MockProvider exposes
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
 
 ### Task 3: ClaudeCLIProvider switches to stdin and accepts model/effort
 
