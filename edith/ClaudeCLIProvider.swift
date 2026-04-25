@@ -18,8 +18,10 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
 
             switch result.terminationStatus {
             case .exited(let code) where code == 0:
-                let stdout = (result.standardOutput ?? "")
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                var stdout = result.standardOutput ?? ""
+                while let last = stdout.last, last == "\n" || last == "\r" {
+                    stdout.removeLast()
+                }
                 if stdout.isEmpty { throw AIProviderError.emptyOutput }
                 return stdout
             case .exited(let code):

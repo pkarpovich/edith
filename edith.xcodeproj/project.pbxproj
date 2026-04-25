@@ -18,15 +18,15 @@
 		28A9DA3BEBC462FF3367BA5C /* Subprocess in Frameworks */ = {isa = PBXBuildFile; productRef = 03FF6FD9E4B924855747F9D2 /* Subprocess */; };
 		392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */; };
 		4844E0B2FB3230A8D9C35AD5 /* Paster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */; };
+		53A8B5A795BEA9F0AE59557A /* ClaudeCLIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81E5C7E2A39AD725D77A013 /* ClaudeCLIProvider.swift */; };
 		6194049377091BE4B90DBED9 /* PlaceholderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FAFF56CD97B150CDC0DCDE3 /* PlaceholderTests.swift */; };
 		630B519FAFD5876F0791A7CD /* EdithShortcutsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */; };
 		984FC8616913D9727AA2C727 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3810FBBB5E0EE5BBB138E5F /* OnboardingView.swift */; };
-		AAA1000000000000A0000001 /* ClaudeCLIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA1000000000000F0000001 /* ClaudeCLIProvider.swift */; };
-		AAA1000000000000A0000002 /* AskEdithRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA1000000000000F0000002 /* AskEdithRunner.swift */; };
-		AAA1000000000000A0000003 /* AskEdithRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA1000000000000F0000003 /* AskEdithRunnerTests.swift */; };
+		9C63F473719EAA49C5D1EC60 /* AskEdithRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E69B3BD12AABFC5C9152D613 /* AskEdithRunner.swift */; };
 		AF027E74B9F22408ACA24B5B /* Logger+Edith.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */; };
 		BDCD4648DD65E34EEE475B05 /* OverlayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7909FDB47F9ADFC83B7856 /* OverlayState.swift */; };
 		C4ED1C8B9F67D16099B0CBED /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F88D6E153A88FB2B1AE446 /* OverlayView.swift */; };
+		CA0B01330D3CA3D9AAE86268 /* AskEdithRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */; };
 		CFD708C8F6E575EEB6FA7B83 /* PermissionsCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A4AAC72B151441FA8092C6 /* PermissionsCheckTests.swift */; };
 		D3979C4320D7D24BADDA68A9 /* SelectionReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42E9440F0BE8E8028D8FEB78 /* SelectionReaderTests.swift */; };
 		DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573A2B1295778B262D7F7943 /* EdithApp.swift */; };
@@ -48,10 +48,8 @@
 /* Begin PBXFileReference section */
 		00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithIntent.swift; sourceTree = "<group>"; };
 		097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdithShortcutsProvider.swift; sourceTree = "<group>"; };
+		3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithRunnerTests.swift; sourceTree = "<group>"; };
 		42E9440F0BE8E8028D8FEB78 /* SelectionReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReaderTests.swift; sourceTree = "<group>"; };
-		AAA1000000000000F0000001 /* ClaudeCLIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCLIProvider.swift; sourceTree = "<group>"; };
-		AAA1000000000000F0000002 /* AskEdithRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithRunner.swift; sourceTree = "<group>"; };
-		AAA1000000000000F0000003 /* AskEdithRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithRunnerTests.swift; sourceTree = "<group>"; };
 		4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Paster.swift; sourceTree = "<group>"; };
 		573A2B1295778B262D7F7943 /* EdithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdithApp.swift; sourceTree = "<group>"; };
 		6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProviderTests.swift; sourceTree = "<group>"; };
@@ -65,6 +63,7 @@
 		9C24D500520A25F2EDD09F72 /* MockProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProvider.swift; sourceTree = "<group>"; };
 		9FAFF56CD97B150CDC0DCDE3 /* PlaceholderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTests.swift; sourceTree = "<group>"; };
 		A02E0A5E38A2A6DBB988EF4B /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
+		B81E5C7E2A39AD725D77A013 /* ClaudeCLIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCLIProvider.swift; sourceTree = "<group>"; };
 		C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Edith.swift"; sourceTree = "<group>"; };
 		C3810FBBB5E0EE5BBB138E5F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C3D8BADCE5161DE504EE7C76 /* SelectionReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReader.swift; sourceTree = "<group>"; };
@@ -72,6 +71,7 @@
 		D317F4BB16F73C404C0C973C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E371F2FF861AD01B27568073 /* PermissionsCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheck.swift; sourceTree = "<group>"; };
 		E4547F1774D1617FF97DB5D2 /* edith.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = edith.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E69B3BD12AABFC5C9152D613 /* AskEdithRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithRunner.swift; sourceTree = "<group>"; };
 		EA250A6F16FDBC395C08B0DA /* OverlayStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayStateTests.swift; sourceTree = "<group>"; };
 		F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -102,8 +102,8 @@
 			children = (
 				F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */,
 				00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */,
-				AAA1000000000000F0000002 /* AskEdithRunner.swift */,
-				AAA1000000000000F0000001 /* ClaudeCLIProvider.swift */,
+				E69B3BD12AABFC5C9152D613 /* AskEdithRunner.swift */,
+				B81E5C7E2A39AD725D77A013 /* ClaudeCLIProvider.swift */,
 				573A2B1295778B262D7F7943 /* EdithApp.swift */,
 				097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */,
 				D317F4BB16F73C404C0C973C /* Info.plist */,
@@ -126,7 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */,
-				AAA1000000000000F0000003 /* AskEdithRunnerTests.swift */,
+				3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */,
 				6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */,
 				EA250A6F16FDBC395C08B0DA /* OverlayStateTests.swift */,
 				D2806009A9138FA1490ABA8E /* PasteboardSnapshotTests.swift */,
@@ -200,7 +200,7 @@
 						ProvisioningStyle = Automatic;
 					};
 					FF40D6F6C580A26869800C76 = {
-						DevelopmentTeam = Y56BH6SLN9;
+						DevelopmentTeam = GGG699AY79;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -235,8 +235,8 @@
 			files = (
 				392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */,
 				1C165CD3149CE9BF052FA725 /* AskEdithIntent.swift in Sources */,
-				AAA1000000000000A0000002 /* AskEdithRunner.swift in Sources */,
-				AAA1000000000000A0000001 /* ClaudeCLIProvider.swift in Sources */,
+				9C63F473719EAA49C5D1EC60 /* AskEdithRunner.swift in Sources */,
+				53A8B5A795BEA9F0AE59557A /* ClaudeCLIProvider.swift in Sources */,
 				DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */,
 				630B519FAFD5876F0791A7CD /* EdithShortcutsProvider.swift in Sources */,
 				AF027E74B9F22408ACA24B5B /* Logger+Edith.swift in Sources */,
@@ -258,7 +258,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED43ECCA5D819F96949A1DA4 /* AskEdithIntentTests.swift in Sources */,
-				AAA1000000000000A0000003 /* AskEdithRunnerTests.swift in Sources */,
+				CA0B01330D3CA3D9AAE86268 /* AskEdithRunnerTests.swift in Sources */,
 				18B90B0856C12673AFC8C898 /* MockProviderTests.swift in Sources */,
 				10DC0F593136CA83AB57CDC1 /* OverlayStateTests.swift in Sources */,
 				0F669C2258B44E108F098711 /* PasteboardSnapshotTests.swift in Sources */,
@@ -315,7 +315,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = Y56BH6SLN9;
+				DEVELOPMENT_TEAM = GGG699AY79;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -385,7 +385,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = Y56BH6SLN9;
+				DEVELOPMENT_TEAM = GGG699AY79;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -419,7 +419,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Y56BH6SLN9;
+				DEVELOPMENT_TEAM = GGG699AY79;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -440,7 +440,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Y56BH6SLN9;
+				DEVELOPMENT_TEAM = GGG699AY79;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

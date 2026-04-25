@@ -1,4 +1,5 @@
 {
+  "originHash" : "f4fb8356af91ef7d08570a8786faeea4a674404c6ab305eb869d917e8d1fa63b",
   "pins" : [
     {
       "identity" : "swift-subprocess",
