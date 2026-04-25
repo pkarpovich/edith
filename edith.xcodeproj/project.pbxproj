@@ -13,6 +13,7 @@
 		1C165CD3149CE9BF052FA725 /* AskEdithIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */; };
 		2390122FD2903E93A51468D0 /* SelectionReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D8BADCE5161DE504EE7C76 /* SelectionReader.swift */; };
 		277C207BE5FDEFEF3917F54A /* PermissionsCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = E371F2FF861AD01B27568073 /* PermissionsCheck.swift */; };
+		28A9DA3BEBC462FF3367BA5C /* Subprocess in Frameworks */ = {isa = PBXBuildFile; productRef = 03FF6FD9E4B924855747F9D2 /* Subprocess */; };
 		4844E0B2FB3230A8D9C35AD5 /* Paster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */; };
 		4A85985E22AEA942B5E2305D /* MockTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C436BEB712B29E527BDA9F6F /* MockTransformer.swift */; };
 		6194049377091BE4B90DBED9 /* PlaceholderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FAFF56CD97B150CDC0DCDE3 /* PlaceholderTests.swift */; };
@@ -62,6 +63,17 @@
 		E371F2FF861AD01B27568073 /* PermissionsCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheck.swift; sourceTree = "<group>"; };
 		E4547F1774D1617FF97DB5D2 /* edith.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = edith.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B5FFD019C20B9C993980EA66 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				28A9DA3BEBC462FF3367BA5C /* Subprocess in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		05280A6F64F29F3B863BA4D3 = {
@@ -124,6 +136,7 @@
 			buildConfigurationList = 44C6BE377E996EDF329CFB3C /* Build configuration list for PBXNativeTarget "edith" */;
 			buildPhases = (
 				6363DE6D69A300E45FBF8E75 /* Sources */,
+				B5FFD019C20B9C993980EA66 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -131,6 +144,7 @@
 			);
 			name = edith;
 			packageProductDependencies = (
+				03FF6FD9E4B924855747F9D2 /* Subprocess */,
 			);
 			productName = edith;
 			productReference = E4547F1774D1617FF97DB5D2 /* edith.app */;
@@ -164,6 +178,7 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					DEEDC3D58122B96E606EF51D = {
+						DevelopmentTeam = GGG699AY79;
 						ProvisioningStyle = Automatic;
 					};
 					FF40D6F6C580A26869800C76 = {
@@ -181,6 +196,9 @@
 			);
 			mainGroup = 05280A6F64F29F3B863BA4D3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				12974E62DF6D38F011BDCA16 /* XCRemoteSwiftPackageReference "swift-subprocess" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9259D264214E60B0615F8D2C /* Products */;
 			projectDirPath = "";
@@ -487,6 +505,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		12974E62DF6D38F011BDCA16 /* XCRemoteSwiftPackageReference "swift-subprocess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-subprocess";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		03FF6FD9E4B924855747F9D2 /* Subprocess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12974E62DF6D38F011BDCA16 /* XCRemoteSwiftPackageReference "swift-subprocess" */;
+			productName = Subprocess;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FA2E7DBD832019FBCD52BB15 /* Project object */;
 }

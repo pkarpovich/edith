@@ -50,12 +50,12 @@ Because Claude responses can take 3–30 seconds, the overlay becomes stateful: 
 
 ### Task 1: Add swift-subprocess dependency
 
-- [ ] add `swiftlang/swift-subprocess` 0.4.x as a Swift Package dependency to the `edith` target via Xcode (File → Add Package Dependencies)
-- [ ] confirm `Subprocess` product is linked into the `edith` target only (not test target)
-- [ ] commit the resolved `Package.resolved`
-- [ ] write a one-line smoke import test in `edith/SubprocessSmoke.swift`: `import Subprocess` (file deleted at end of task once linkage confirmed) — or equivalent: ensure the project still builds with the new dep
-- [ ] run `xcodebuild build` — must succeed with zero warnings
-- [ ] run `xcodebuild test` — pre-existing tests must still pass
+- [x] add `swiftlang/swift-subprocess` 0.4.x as a Swift Package dependency to the `edith` target via Xcode (File → Add Package Dependencies)
+- [x] confirm `Subprocess` product is linked into the `edith` target only (not test target)
+- [x] commit the resolved `Package.resolved`
+- [x] write a one-line smoke import test in `edith/SubprocessSmoke.swift`: `import Subprocess` (file deleted at end of task once linkage confirmed) — or equivalent: ensure the project still builds with the new dep
+- [x] run `xcodebuild build` — must succeed with zero warnings
+- [x] run `xcodebuild test` — pre-existing tests must still pass
 
 ### Task 2: Define AIProvider protocol and MockProvider
 
