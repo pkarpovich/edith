@@ -104,10 +104,10 @@ The pattern is also provider-agnostic — when Phase 3 adds `FoundationModelsPro
 
 ### Task 5: Verify automated acceptance criteria
 
-- [ ] `xcodebuild -scheme edith build` passes with zero warnings
-- [ ] `xcodebuild -scheme edith test` passes with all unit tests green
-- [ ] all task checkboxes above are `[x]`
-- [ ] no `TODO` / `FIXME` left in files created or modified in Tasks 1–4
+- [x] `xcodebuild -scheme edith build` passes with zero warnings
+- [x] `xcodebuild -scheme edith test` passes with all unit tests green
+- [x] all task checkboxes above are `[x]`
+- [x] no `TODO` / `FIXME` left in files created or modified in Tasks 1–4
 
 ## Technical Details
 
