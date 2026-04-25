@@ -18,8 +18,10 @@ struct AskEdithIntent: AppIntent {
 
         let transformed = MockTransformer.transform(selection)
 
-        let coordinator = await MainActor.run { OverlayCoordinator() }
-        let outcome = await coordinator.present(original: selection, result: transformed)
+        let coordinator = await MainActor.run {
+            OverlayCoordinator(initial: .ready(original: selection, result: transformed))
+        }
+        let outcome = await coordinator.present()
         switch outcome {
         case .confirmed(let text):
             Logger.edith.info("AskEdithIntent confirmed: \(String(text.prefix(200)), privacy: .private)")

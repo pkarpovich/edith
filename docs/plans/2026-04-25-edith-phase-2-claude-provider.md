@@ -68,13 +68,13 @@ Because Claude responses can take 3–30 seconds, the overlay becomes stateful: 
 
 ### Task 3: Refactor overlay into a state machine
 
-- [ ] introduce `OverlayState` enum with cases `processing(original: String)`, `ready(original: String, result: String)`, `error(original: String, message: String)`
-- [ ] convert `OverlayCoordinator` so it exposes a state-publishing surface (an `@Observable` model or `AsyncStream<OverlayState>`) instead of resolving once with a single outcome
-- [ ] update `OverlayView` to render per state: in `.processing` show original on the left and a `ProgressView` on the right with "thinking…" text; in `.ready` show original and result side-by-side and an Enter hint; in `.error` show original and a styled error block with Dismiss hint only
-- [ ] Esc dismisses in any state; Enter is a no-op outside `.ready`
-- [ ] expose a `confirm()` and `dismiss()` callback to the intent so it can react and own the provider Task lifecycle
-- [ ] write unit tests for state transitions (start `.processing`, transition to `.ready` produces expected payload, transition to `.error` carries message) — test the model / state struct, not the SwiftUI view
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass
+- [x] introduce `OverlayState` enum with cases `processing(original: String)`, `ready(original: String, result: String)`, `error(original: String, message: String)`
+- [x] convert `OverlayCoordinator` so it exposes a state-publishing surface (an `@Observable` model or `AsyncStream<OverlayState>`) instead of resolving once with a single outcome
+- [x] update `OverlayView` to render per state: in `.processing` show original on the left and a `ProgressView` on the right with "thinking…" text; in `.ready` show original and result side-by-side and an Enter hint; in `.error` show original and a styled error block with Dismiss hint only
+- [x] Esc dismisses in any state; Enter is a no-op outside `.ready`
+- [x] expose a `confirm()` and `dismiss()` callback to the intent so it can react and own the provider Task lifecycle
+- [x] write unit tests for state transitions (start `.processing`, transition to `.ready` produces expected payload, transition to `.error` carries message) — test the model / state struct, not the SwiftUI view
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass
 
 ### Task 4: ClaudeCLIProvider and intent integration
 

@@ -10,15 +10,21 @@ final class OverlayCoordinator {
         case dismissed
     }
 
+    let model: OverlayStateModel
+
     private var panel: OverlayPanel?
     private var monitor: Any?
     private var continuation: CheckedContinuation<Outcome, Never>?
 
-    func present(original: String, result: String) async -> Outcome {
+    init(initial: OverlayState) {
+        self.model = OverlayStateModel(initial: initial)
+    }
+
+    func present() async -> Outcome {
         await withCheckedContinuation { continuation in
             self.continuation = continuation
 
-            let hosting = NSHostingView(rootView: OverlayView(original: original, result: result))
+            let hosting = NSHostingView(rootView: OverlayView(model: model))
             let fitting = hosting.fittingSize
             let size = NSSize(width: max(fitting.width, 640), height: max(fitting.height, 180))
             let rect = Self.centeredRect(for: size)
@@ -31,10 +37,10 @@ final class OverlayCoordinator {
                 guard let self else { return event }
                 switch event.keyCode {
                 case 36, 76:
-                    self.resolve(.confirmed(result))
-                    return nil
+                    if self.confirm() { return nil }
+                    return event
                 case 53:
-                    self.resolve(.dismissed)
+                    self.dismiss()
                     return nil
                 default:
                     return event
@@ -43,6 +49,21 @@ final class OverlayCoordinator {
 
             panel.makeKeyAndOrderFront(nil)
         }
+    }
+
+    func transition(to newState: OverlayState) {
+        model.state = newState
+    }
+
+    @discardableResult
+    func confirm() -> Bool {
+        guard case .ready(_, let result) = model.state else { return false }
+        resolve(.confirmed(result))
+        return true
+    }
+
+    func dismiss() {
+        resolve(.dismissed)
     }
 
     private func resolve(_ outcome: Outcome) {
