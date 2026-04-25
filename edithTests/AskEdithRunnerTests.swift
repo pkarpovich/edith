@@ -136,6 +136,33 @@ struct AskEdithRunnerFormatTests {
     }
 
     @Test
+    func formatTerminatedBySignal() {
+        let message = AskEdithRunner.format(
+            error: AIProviderError.terminatedBySignal(signal: 15, stderr: "killed")
+        )
+        #expect(message.contains("signal 15"))
+        #expect(message.contains("killed"))
+    }
+
+    @Test
+    func formatTerminatedBySignalEmptyStderr() {
+        let message = AskEdithRunner.format(
+            error: AIProviderError.terminatedBySignal(signal: 9, stderr: "")
+        )
+        #expect(message == "Claude terminated by signal 9.")
+    }
+
+    @Test
+    func formatTruncatesLongStderr() {
+        let long = String(repeating: "x", count: 1200)
+        let message = AskEdithRunner.format(
+            error: AIProviderError.nonZeroExit(code: 1, stderr: long)
+        )
+        #expect(message.count < long.count)
+        #expect(message.hasSuffix("…"))
+    }
+
+    @Test
     func formatEmptyOutput() {
         let message = AskEdithRunner.format(error: AIProviderError.emptyOutput)
         #expect(message.contains("no output"))

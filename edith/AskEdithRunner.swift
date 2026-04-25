@@ -1,6 +1,8 @@
 import Foundation
 
 nonisolated enum AskEdithRunner {
+    static let stderrPreviewLimit: Int = 500
+
     @MainActor
     static func drive(
         provider: any AIProvider,
@@ -17,6 +19,7 @@ nonisolated enum AskEdithRunner {
         } catch AIProviderError.cancelled {
             return
         } catch {
+            if Task.isCancelled { return }
             model.state = .error(original: input, message: format(error: error))
         }
     }
@@ -27,10 +30,15 @@ nonisolated enum AskEdithRunner {
             case .notFound:
                 return "Claude CLI not found. Make sure `claude` is installed and on PATH."
             case .nonZeroExit(let code, let stderr):
-                let trimmed = stderr.trimmingCharacters(in: .whitespacesAndNewlines)
-                return trimmed.isEmpty
+                let preview = stderrPreview(stderr)
+                return preview.isEmpty
                     ? "Claude exited with code \(code)."
-                    : "Claude exited with code \(code): \(trimmed)"
+                    : "Claude exited with code \(code): \(preview)"
+            case .terminatedBySignal(let signal, let stderr):
+                let preview = stderrPreview(stderr)
+                return preview.isEmpty
+                    ? "Claude terminated by signal \(signal)."
+                    : "Claude terminated by signal \(signal): \(preview)"
             case .emptyOutput:
                 return "Claude returned no output."
             case .cancelled:
@@ -38,5 +46,11 @@ nonisolated enum AskEdithRunner {
             }
         }
         return error.localizedDescription
+    }
+
+    nonisolated static func stderrPreview(_ stderr: String) -> String {
+        let trimmed = stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count > stderrPreviewLimit else { return trimmed }
+        return String(trimmed.prefix(stderrPreviewLimit)) + "…"
     }
 }

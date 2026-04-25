@@ -160,7 +160,7 @@ final class OverlayCoordinator {
         else {
             return nil
         }
-        var result = UnsafeMutablePointer<T>.allocate(capacity: 1)
+        let result = UnsafeMutablePointer<T>.allocate(capacity: 1)
         defer { result.deallocate() }
         guard AXValueGetValue(value as! AXValue, type, result) else { return nil }
         return result.pointee
