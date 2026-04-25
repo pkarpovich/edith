@@ -12,7 +12,7 @@ nonisolated enum PromptParserError: Error, Sendable, Equatable {
 }
 
 extension PromptDefinition {
-    static func parse(contents: String) -> PromptDefinition {
+    nonisolated static func parse(contents: String) -> PromptDefinition {
         let normalized = contents.replacingOccurrences(of: "\r\n", with: "\n")
         let stripped = stripLeadingCommentBlock(normalized)
         if let (header, body) = extractFrontmatter(stripped),
@@ -26,7 +26,7 @@ extension PromptDefinition {
         return PromptDefinition(model: nil, effort: nil, body: stripped)
     }
 
-    static func normalizeModel(_ input: String) -> String {
+    nonisolated static func normalizeModel(_ input: String) -> String {
         let lower = input.lowercased()
         for keyword in ["haiku", "sonnet", "opus"] where lower.contains(keyword) {
             return keyword
@@ -34,7 +34,7 @@ extension PromptDefinition {
         return input
     }
 
-    static func render(definition: PromptDefinition, variables: [String: String]) throws -> String {
+    nonisolated static func render(definition: PromptDefinition, variables: [String: String]) throws -> String {
         var body = definition.body
         if !body.contains("{{selection}}") {
             body += "\n\n{{selection}}"
@@ -49,7 +49,7 @@ extension PromptDefinition {
     }
 }
 
-private func stripLeadingCommentBlock(_ text: String) -> String {
+nonisolated private func stripLeadingCommentBlock(_ text: String) -> String {
     let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
     var count = 0
     for line in lines {
@@ -64,7 +64,7 @@ private func stripLeadingCommentBlock(_ text: String) -> String {
     return lines.dropFirst(count).joined(separator: "\n")
 }
 
-private func extractFrontmatter(_ text: String) -> (header: String, body: String)? {
+nonisolated private func extractFrontmatter(_ text: String) -> (header: String, body: String)? {
     guard text.hasPrefix("---\n") else { return nil }
     let afterOpening = String(text.dropFirst(4))
     let lines = afterOpening.split(separator: "\n", omittingEmptySubsequences: false)
@@ -74,7 +74,7 @@ private func extractFrontmatter(_ text: String) -> (header: String, body: String
     return (header, body)
 }
 
-private func parseFlatYAML(_ text: String) -> [String: String]? {
+nonisolated private func parseFlatYAML(_ text: String) -> [String: String]? {
     var result: [String: String] = [:]
     let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
     for line in lines {
@@ -98,7 +98,7 @@ private func parseFlatYAML(_ text: String) -> [String: String]? {
     return result
 }
 
-private func firstUnknownPlaceholder(in text: String) -> String? {
+nonisolated private func firstUnknownPlaceholder(in text: String) -> String? {
     guard let regex = try? NSRegularExpression(pattern: #"\{\{([^}]+)\}\}"#) else {
         return nil
     }

@@ -6,21 +6,23 @@ nonisolated enum AskEdithRunner {
     @MainActor
     static func drive(
         provider: any AIProvider,
-        input: String,
+        original: String,
         prompt: String,
-        model: OverlayStateModel
+        model: String?,
+        effort: String?,
+        state: OverlayStateModel
     ) async {
         do {
-            let result = try await provider.run(prompt: prompt, model: nil, effort: nil)
+            let result = try await provider.run(prompt: prompt, model: model, effort: effort)
             try Task.checkCancellation()
-            model.state = .ready(original: input, result: result)
+            state.state = .ready(original: original, result: result)
         } catch is CancellationError {
             return
         } catch AIProviderError.cancelled {
             return
         } catch {
             if Task.isCancelled { return }
-            model.state = .error(original: input, message: format(error: error))
+            state.state = .error(original: original, message: format(error: error))
         }
     }
 
@@ -43,6 +45,14 @@ nonisolated enum AskEdithRunner {
                 return "Claude returned no output."
             case .cancelled:
                 return "Cancelled."
+            }
+        }
+        if let parserError = error as? PromptParserError {
+            switch parserError {
+            case .ioFailure(let path, let underlying):
+                return "Could not read prompt file at \(path): \(underlying)"
+            case .unknownVariable(let name):
+                return "Unknown variable in prompt file: \(name)"
             }
         }
         return error.localizedDescription

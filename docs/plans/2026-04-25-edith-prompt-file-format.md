@@ -94,13 +94,13 @@ The pattern is also provider-agnostic — when Phase 3 adds `FoundationModelsPro
 
 ### Task 4: AskEdithIntent path parameter and runner wiring
 
-- [ ] in `edith/AskEdithIntent.swift`, replace `@Parameter var prompt: String` with `@Parameter(title: "Prompt file", description: "Absolute path to a prompt file with optional YAML frontmatter (model, effort) and `{{selection}}` placeholder.") var path: String`
-- [ ] add a small helper `PromptFileLoader.load(path:)` that expands a leading `~/` to `$HOME` (or `NSHomeDirectory()`), reads the file, returns `String`; surface I/O failures as `PromptParserError.ioFailure`
-- [ ] in `AskEdithIntent.perform()`, after capturing the selection: load the file, parse via `PromptDefinition.parse`, render with `["selection": selection]`, dispatch via `AskEdithRunner.drive(provider:model:effort:rendered:model:...)`
-- [ ] update `edith/AskEdithRunner.swift` to take `model: String?`, `effort: String?`, `prompt: String` (the rendered body) and forward to provider; remove the old `input`/`prompt` split
-- [ ] surface `ioFailure` and `unknownVariable` paths as `OverlayState.error(...)` with friendly messages so the user sees them in the overlay (consistent with how `AIProviderError` is rendered today)
-- [ ] add unit tests for the path-loader helper (read, missing file, `~/` expansion) and for `AskEdithRunner` integration with a fake provider that records `(prompt, model, effort)`
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 5
+- [x] in `edith/AskEdithIntent.swift`, replace `@Parameter var prompt: String` with `@Parameter(title: "Prompt file", description: "Absolute path to a prompt file with optional YAML frontmatter (model, effort) and `{{selection}}` placeholder.") var path: String`
+- [x] add a small helper `PromptFileLoader.load(path:)` that expands a leading `~/` to `$HOME` (or `NSHomeDirectory()`), reads the file, returns `String`; surface I/O failures as `PromptParserError.ioFailure`
+- [x] in `AskEdithIntent.perform()`, after capturing the selection: load the file, parse via `PromptDefinition.parse`, render with `["selection": selection]`, dispatch via `AskEdithRunner.drive(provider:model:effort:rendered:model:...)`
+- [x] update `edith/AskEdithRunner.swift` to take `model: String?`, `effort: String?`, `prompt: String` (the rendered body) and forward to provider; remove the old `input`/`prompt` split
+- [x] surface `ioFailure` and `unknownVariable` paths as `OverlayState.error(...)` with friendly messages so the user sees them in the overlay (consistent with how `AIProviderError` is rendered today)
+- [x] add unit tests for the path-loader helper (read, missing file, `~/` expansion) and for `AskEdithRunner` integration with a fake provider that records `(prompt, model, effort)`
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 5
 
 ### Task 5: Verify automated acceptance criteria
 

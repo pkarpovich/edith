@@ -6,14 +6,17 @@ struct AskEdithIntent: AppIntent {
     static let title: LocalizedStringResource = "Ask Edith"
     static let supportedModes: IntentModes = .background
 
-    @Parameter(title: "Prompt", description: "Instruction sent to Claude.")
-    var prompt: String
+    @Parameter(
+        title: "Prompt file",
+        description: "Absolute path to a prompt file with optional YAML frontmatter (model, effort) and `{{selection}}` placeholder."
+    )
+    var path: String
 
     func perform() async throws -> some IntentResult {
         Logger.edith.info("AskEdithIntent.perform fired at \(Date().timeIntervalSince1970, privacy: .public)")
-        let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedPrompt.isEmpty else {
-            Logger.edith.info("AskEdithIntent: prompt parameter is empty")
+        let trimmedPath = path.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPath.isEmpty else {
+            Logger.edith.info("AskEdithIntent: path parameter is empty")
             return .result()
         }
         let reader = SelectionReader()
@@ -27,15 +30,29 @@ struct AskEdithIntent: AppIntent {
         let coordinator = await MainActor.run {
             OverlayCoordinator(initial: .processing(original: selection))
         }
+
+        let prepared: PreparedPrompt
+        do {
+            prepared = try Self.prepare(path: trimmedPath, selection: selection)
+        } catch {
+            let message = AskEdithRunner.format(error: error)
+            await MainActor.run {
+                coordinator.model.state = .error(original: selection, message: message)
+            }
+            _ = await coordinator.present()
+            return .result()
+        }
+
         let provider = ClaudeCLIProvider()
-        let capturedPrompt = trimmedPrompt
 
         let driveTask = Task { @MainActor in
             await AskEdithRunner.drive(
                 provider: provider,
-                input: selection,
-                prompt: capturedPrompt,
-                model: coordinator.model
+                original: selection,
+                prompt: prepared.rendered,
+                model: prepared.model,
+                effort: prepared.effort,
+                state: coordinator.model
             )
         }
 
@@ -50,5 +67,25 @@ struct AskEdithIntent: AppIntent {
             Logger.edith.info("AskEdithIntent dismissed")
         }
         return .result()
+    }
+
+    nonisolated static func prepare(path: String, selection: String) throws -> PreparedPrompt {
+        let contents = try PromptFileLoader.load(path: path)
+        let definition = PromptDefinition.parse(contents: contents)
+        let rendered = try PromptDefinition.render(
+            definition: definition,
+            variables: ["selection": selection]
+        )
+        return PreparedPrompt(
+            rendered: rendered,
+            model: definition.model.map(PromptDefinition.normalizeModel),
+            effort: definition.effort
+        )
+    }
+
+    nonisolated struct PreparedPrompt: Sendable, Equatable {
+        let rendered: String
+        let model: String?
+        let effort: String?
     }
 }

@@ -29,29 +29,33 @@ private struct DelayingProvider: AIProvider {
 struct AskEdithRunnerDriveTests {
     @Test
     func successProviderTransitionsToReady() async {
-        let model = OverlayStateModel(initial: .processing(original: "hi"))
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
         let provider = ConstantProvider(output: "RESULT")
         await AskEdithRunner.drive(
             provider: provider,
-            input: "hi",
+            original: "hi",
             prompt: "p",
-            model: model
+            model: nil,
+            effort: nil,
+            state: state
         )
-        #expect(model.state == .ready(original: "hi", result: "RESULT"))
+        #expect(state.state == .ready(original: "hi", result: "RESULT"))
     }
 
     @Test
     func providerErrorTransitionsToErrorWithFormattedMessage() async {
-        let model = OverlayStateModel(initial: .processing(original: "hi"))
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
         let provider = ThrowingProvider(error: AIProviderError.notFound)
         await AskEdithRunner.drive(
             provider: provider,
-            input: "hi",
+            original: "hi",
             prompt: "p",
-            model: model
+            model: nil,
+            effort: nil,
+            state: state
         )
-        guard case .error(let original, let message) = model.state else {
-            Issue.record("Expected .error state, got \(model.state)")
+        guard case .error(let original, let message) = state.state else {
+            Issue.record("Expected .error state, got \(state.state)")
             return
         }
         #expect(original == "hi")
@@ -60,18 +64,20 @@ struct AskEdithRunnerDriveTests {
 
     @Test
     func nonZeroExitProducesErrorMessageWithCodeAndStderr() async {
-        let model = OverlayStateModel(initial: .processing(original: "hi"))
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
         let provider = ThrowingProvider(
             error: AIProviderError.nonZeroExit(code: 7, stderr: "boom")
         )
         await AskEdithRunner.drive(
             provider: provider,
-            input: "hi",
+            original: "hi",
             prompt: "p",
-            model: model
+            model: nil,
+            effort: nil,
+            state: state
         )
-        guard case .error(_, let message) = model.state else {
-            Issue.record("Expected .error state, got \(model.state)")
+        guard case .error(_, let message) = state.state else {
+            Issue.record("Expected .error state, got \(state.state)")
             return
         }
         #expect(message.contains("7"))
@@ -80,33 +86,76 @@ struct AskEdithRunnerDriveTests {
 
     @Test
     func cancellationKeepsProcessingState() async throws {
-        let model = OverlayStateModel(initial: .processing(original: "hi"))
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
         let provider = DelayingProvider(delay: .seconds(5))
         let task = Task { @MainActor in
             await AskEdithRunner.drive(
                 provider: provider,
-                input: "hi",
+                original: "hi",
                 prompt: "p",
-                model: model
+                model: nil,
+                effort: nil,
+                state: state
             )
         }
         try await Task.sleep(for: .milliseconds(20))
         task.cancel()
         _ = await task.value
-        #expect(model.state == .processing(original: "hi"))
+        #expect(state.state == .processing(original: "hi"))
     }
 
     @Test
     func providerThrowingAIProviderCancelledKeepsProcessingState() async {
-        let model = OverlayStateModel(initial: .processing(original: "hi"))
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
         let provider = ThrowingProvider(error: AIProviderError.cancelled)
         await AskEdithRunner.drive(
             provider: provider,
-            input: "hi",
+            original: "hi",
             prompt: "p",
-            model: model
+            model: nil,
+            effort: nil,
+            state: state
         )
-        #expect(model.state == .processing(original: "hi"))
+        #expect(state.state == .processing(original: "hi"))
+    }
+
+    @Test
+    func driveForwardsModelAndEffortToProvider() async {
+        let recorder = MockProviderRecorder()
+        let provider = MockProvider(recorder: recorder)
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        await AskEdithRunner.drive(
+            provider: provider,
+            original: "hi",
+            prompt: "do the thing",
+            model: "haiku",
+            effort: "low",
+            state: state
+        )
+        let calls = await recorder.calls
+        #expect(calls.count == 1)
+        #expect(calls.first?.prompt == "do the thing")
+        #expect(calls.first?.model == "haiku")
+        #expect(calls.first?.effort == "low")
+    }
+
+    @Test
+    func driveForwardsNilModelAndEffortToProvider() async {
+        let recorder = MockProviderRecorder()
+        let provider = MockProvider(recorder: recorder)
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        await AskEdithRunner.drive(
+            provider: provider,
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        let calls = await recorder.calls
+        #expect(calls.count == 1)
+        #expect(calls.first?.model == nil)
+        #expect(calls.first?.effort == nil)
     }
 }
 
@@ -172,6 +221,23 @@ struct AskEdithRunnerFormatTests {
     func formatCancelled() {
         let message = AskEdithRunner.format(error: AIProviderError.cancelled)
         #expect(message == "Cancelled.")
+    }
+
+    @Test
+    func formatPromptParserIoFailure() {
+        let message = AskEdithRunner.format(
+            error: PromptParserError.ioFailure(path: "/tmp/missing.txt", underlying: "no such file")
+        )
+        #expect(message.contains("/tmp/missing.txt"))
+        #expect(message.contains("no such file"))
+    }
+
+    @Test
+    func formatPromptParserUnknownVariable() {
+        let message = AskEdithRunner.format(
+            error: PromptParserError.unknownVariable(name: "nonsense")
+        )
+        #expect(message.contains("nonsense"))
     }
 
     @Test
