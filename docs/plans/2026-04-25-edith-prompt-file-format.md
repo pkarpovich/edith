@@ -64,17 +64,17 @@ The pattern is also provider-agnostic — when Phase 3 adds `FoundationModelsPro
 
 ### Task 1: PromptDefinition parser
 
-- [ ] add `edith/PromptDefinition.swift` declaring a `PromptDefinition` struct holding `model: String?`, `effort: String?`, `body: String`
-- [ ] declare a `PromptParserError` enum: `ioFailure(path, underlying)`, `unknownVariable(name)`, all `Sendable`
-- [ ] implement a static `parse(contents:)` that:
+- [x] add `edith/PromptDefinition.swift` declaring a `PromptDefinition` struct holding `model: String?`, `effort: String?`, `body: String`
+- [x] declare a `PromptParserError` enum: `ioFailure(path, underlying)`, `unknownVariable(name)`, all `Sendable`
+- [x] implement a static `parse(contents:)` that:
     - normalizes CRLF → LF
     - strips leading `# ...` contiguous comment lines (2+; a single `#` line is preserved as a markdown header — mirrors ralphex `stripLeadingComments`)
     - if remaining content starts with `---\n`, finds the next `\n---` on its own line, parses the header as flat YAML-ish `key: value` lines (lowercased keys, trim whitespace, ignore unknown keys), takes everything after the closing `---` as body (trimmed)
     - if no frontmatter or malformed, treats whole content as body and returns `PromptDefinition(model: nil, effort: nil, body: content)`
-- [ ] implement a static `normalizeModel(_:)` that returns one of `haiku`, `sonnet`, `opus` if the input contains that keyword (case-insensitive); otherwise returns the input unchanged so future / unknown model names pass through to the CLI
-- [ ] implement `render(definition:variables:)` doing `String.replacingOccurrences(of: "{{KEY}}", ...)` for each known variable; if `{{selection}}` is missing in the body, append it on a new line after the body (graceful default for minimal prompts); throw `unknownVariable` only if a `{{...}}` pattern remains after rendering all known keys (caller decides whether that's fatal)
-- [ ] add unit tests covering: no frontmatter; full frontmatter; malformed YAML → no frontmatter; missing closing delimiter → no frontmatter; closing delimiter not on its own line → no frontmatter; unknown frontmatter keys ignored; `model` keyword extracted from `claude-sonnet-4-6`; comment block (3 lines) stripped; single comment line preserved; blank line stops comment strip; `{{selection}}` substitution; missing `{{selection}}` auto-appended; unrelated `{{...}}` left in body produces error
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 2
+- [x] implement a static `normalizeModel(_:)` that returns one of `haiku`, `sonnet`, `opus` if the input contains that keyword (case-insensitive); otherwise returns the input unchanged so future / unknown model names pass through to the CLI
+- [x] implement `render(definition:variables:)` doing `String.replacingOccurrences(of: "{{KEY}}", ...)` for each known variable; if `{{selection}}` is missing in the body, append it on a new line after the body (graceful default for minimal prompts); throw `unknownVariable` only if a `{{...}}` pattern remains after rendering all known keys (caller decides whether that's fatal)
+- [x] add unit tests covering: no frontmatter; full frontmatter; malformed YAML → no frontmatter; missing closing delimiter → no frontmatter; closing delimiter not on its own line → no frontmatter; unknown frontmatter keys ignored; `model` keyword extracted from `claude-sonnet-4-6`; comment block (3 lines) stripped; single comment line preserved; blank line stops comment strip; `{{selection}}` substitution; missing `{{selection}}` auto-appended; unrelated `{{...}}` left in body produces error
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 2
 
 ### Task 2: AIProvider protocol gets model and effort
 
