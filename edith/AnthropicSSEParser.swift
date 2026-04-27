@@ -30,24 +30,37 @@ nonisolated struct AnthropicSSEParser: Sendable {
     }
 
     private mutating func takeNextEvent() -> String? {
-        guard let separatorIndex = findDoubleNewlineIndex() else { return nil }
-        let eventBytes = Array(bytes[0..<separatorIndex])
-        bytes.removeSubrange(0..<(separatorIndex + 2))
+        guard let boundary = findEventBoundary() else { return nil }
+        let eventBytes = Array(bytes[0..<boundary.index])
+        bytes.removeSubrange(0..<(boundary.index + boundary.terminatorLength))
         return String(decoding: eventBytes, as: UTF8.self)
     }
 
-    private func findDoubleNewlineIndex() -> Int? {
-        guard bytes.count >= 2 else { return nil }
-        for i in 0..<(bytes.count - 1) where bytes[i] == 0x0A && bytes[i + 1] == 0x0A {
-            return i
+    private func findEventBoundary() -> (index: Int, terminatorLength: Int)? {
+        let count = bytes.count
+        guard count >= 2 else { return nil }
+        var i = 0
+        while i < count - 1 {
+            if bytes[i] == 0x0A && bytes[i + 1] == 0x0A {
+                return (i, 2)
+            }
+            if i + 3 < count
+                && bytes[i] == 0x0D
+                && bytes[i + 1] == 0x0A
+                && bytes[i + 2] == 0x0D
+                && bytes[i + 3] == 0x0A {
+                return (i, 4)
+            }
+            i += 1
         }
         return nil
     }
 
     static func interpret(rawEvent: String) -> Event? {
+        let normalized = rawEvent.replacingOccurrences(of: "\r\n", with: "\n")
         var eventName: String?
         var dataLines: [String] = []
-        for line in rawEvent.split(separator: "\n", omittingEmptySubsequences: false) {
+        for line in normalized.split(separator: "\n", omittingEmptySubsequences: false) {
             let lineString = String(line)
             if lineString.hasPrefix(":") { continue }
             if let value = field(prefix: "event:", line: lineString) {

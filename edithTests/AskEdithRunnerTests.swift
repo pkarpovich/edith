@@ -422,6 +422,32 @@ struct AskEdithRunnerFormatTests {
     }
 
     @Test
+    func formatMissingApiKey() {
+        let message = AskEdithRunner.format(error: AIProviderError.missingApiKey)
+        #expect(message.contains("ANTHROPIC_API_KEY"))
+    }
+
+    @Test
+    func formatApiErrorIncludesStatusTypeAndMessage() {
+        let message = AskEdithRunner.format(
+            error: AIProviderError.apiError(status: 429, type: "rate_limit_error", message: "too many requests")
+        )
+        #expect(message.contains("429"))
+        #expect(message.contains("rate_limit_error"))
+        #expect(message.contains("too many requests"))
+    }
+
+    @Test
+    func formatApiErrorTruncatesLongMessage() {
+        let long = String(repeating: "y", count: 1200)
+        let message = AskEdithRunner.format(
+            error: AIProviderError.apiError(status: 500, type: "server", message: long)
+        )
+        #expect(message.count < long.count + 100)
+        #expect(message.hasSuffix("…"))
+    }
+
+    @Test
     func formatPromptParserIoFailure() {
         let message = AskEdithRunner.format(
             error: PromptParserError.ioFailure(path: "/tmp/missing.txt", underlying: "no such file")

@@ -193,4 +193,32 @@ struct AnthropicSSEParserTests {
         let events = parser.feed(chunk)
         #expect(events == [.textDelta("z")])
     }
+
+    @Test
+    func crlfTerminatedFramesYieldEvents() {
+        var parser = AnthropicSSEParser()
+        let body = #"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"hi"}}"#
+        var bytes = Array("event: content_block_delta".utf8)
+        bytes.append(contentsOf: [0x0D, 0x0A])
+        bytes.append(contentsOf: Array(body.utf8))
+        bytes.append(contentsOf: [0x0D, 0x0A, 0x0D, 0x0A])
+        let events = parser.feed(Data(bytes))
+        #expect(events == [.textDelta("hi")])
+    }
+
+    @Test
+    func mixedCRLFAndLFTerminatorsAcrossEvents() {
+        var parser = AnthropicSSEParser()
+        let firstBody = #"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"a"}}"#
+        var bytes = Array("event: content_block_delta".utf8)
+        bytes.append(contentsOf: [0x0D, 0x0A])
+        bytes.append(contentsOf: Array(firstBody.utf8))
+        bytes.append(contentsOf: [0x0D, 0x0A, 0x0D, 0x0A])
+        bytes.append(contentsOf: Array(event(
+            "content_block_delta",
+            data: #"{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"b"}}"#
+        ).utf8))
+        let events = parser.feed(Data(bytes))
+        #expect(events == [.textDelta("a"), .textDelta("b")])
+    }
 }

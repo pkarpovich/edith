@@ -5,19 +5,17 @@ import Testing
 private struct FakeTransport: AnthropicTransport {
     let statusCode: Int
     let chunks: [Data]
-    let httpVersion: String?
 
-    init(statusCode: Int = 200, chunks: [Data], httpVersion: String? = "HTTP/1.1") {
+    init(statusCode: Int = 200, chunks: [Data]) {
         self.statusCode = statusCode
         self.chunks = chunks
-        self.httpVersion = httpVersion
     }
 
     func openStream(request: URLRequest) async throws -> (HTTPURLResponse, AsyncThrowingStream<Data, Error>) {
         let response = HTTPURLResponse(
             url: request.url ?? AnthropicAPIProvider.endpoint,
             statusCode: statusCode,
-            httpVersion: httpVersion,
+            httpVersion: "HTTP/1.1",
             headerFields: nil
         )!
         let chunks = self.chunks

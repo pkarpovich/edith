@@ -1,17 +1,6 @@
 import Foundation
 import os
 
-private actor EffortIgnoredWarning {
-    static let shared = EffortIgnoredWarning()
-    private var fired = false
-
-    func shouldWarn() -> Bool {
-        if fired { return false }
-        fired = true
-        return true
-    }
-}
-
 struct AnthropicAPIProvider: AIProvider {
     static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     static let anthropicVersion = "2023-06-01"
@@ -37,8 +26,7 @@ struct AnthropicAPIProvider: AIProvider {
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    if let effort, !effort.isEmpty,
-                       await EffortIgnoredWarning.shared.shouldWarn() {
+                    if let effort, !effort.isEmpty {
                         Logger.edith.warning("AnthropicAPIProvider: 'effort' is ignored for the API provider in this phase")
                     }
                     guard let apiKey = apiKeyProvider(), !apiKey.isEmpty else {
