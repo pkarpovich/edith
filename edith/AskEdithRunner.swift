@@ -50,6 +50,11 @@ nonisolated enum AskEdithRunner {
                 return "Claude returned no output."
             case .cancelled:
                 return "Cancelled."
+            case .missingApiKey:
+                return "Anthropic API key missing - set ANTHROPIC_API_KEY."
+            case .apiError(let status, let type, let message):
+                let preview = stderrPreview(message)
+                return "Anthropic API error (\(status) \(type)): \(preview)"
             }
         }
         if let parserError = error as? PromptParserError {

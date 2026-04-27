@@ -119,17 +119,17 @@ The user picks which provider runs each Shortcut by adding `provider:` to the pr
 
 ### Task 5: AnthropicAPIProvider with injectable transport
 
-- [ ] add `edith/AnthropicTransport.swift`: a small protocol abstracting the HTTP roundtrip. Method something like `func openStream(request: URLRequest) async throws -> (HTTPURLResponse, AsyncThrowingStream<Data, Error>)`. Real implementation `URLSessionAnthropicTransport` uses `URLSession.shared.bytes(for:)` and bridges into `Data` chunks
-- [ ] add `edith/AnthropicAPIProvider.swift` conforming to `AIProvider`. In `run`:
+- [x] add `edith/AnthropicTransport.swift`: a small protocol abstracting the HTTP roundtrip. Method something like `func openStream(request: URLRequest) async throws -> (HTTPURLResponse, AsyncThrowingStream<Data, Error>)`. Real implementation `URLSessionAnthropicTransport` uses `URLSession.shared.bytes(for:)` and bridges into `Data` chunks
+- [x] add `edith/AnthropicAPIProvider.swift` conforming to `AIProvider`. In `run`:
     - read `ANTHROPIC_API_KEY` from `ProcessInfo.environment`; missing → throw new `AIProviderError.missingApiKey`
     - build `URLRequest` to `https://api.anthropic.com/v1/messages` with headers `x-api-key`, `anthropic-version: 2023-06-01`, `content-type: application/json`, `accept: text/event-stream`
     - JSON body: `{ "model": resolved_model, "max_tokens": 4096, "stream": true, "messages": [{"role":"user","content": prompt}] }` where `resolved_model` is `AnthropicModels.resolve(model)` (default `claude-sonnet-4-6` when `model == nil`)
     - if `effort` is non-nil, log a one-time warning that effort is ignored for the API provider in this phase
     - call `transport.openStream`; on non-2xx HTTP status, drain a small body and throw a structured error (see below); on 2xx, feed the byte stream into `AnthropicSSEParser` and yield each `contentBlockDelta(text)` as a delta on the returned `AsyncThrowingStream`; on `error` event, throw `AIProviderError.apiError(...)`
     - propagate cancellation: when the consumer cancels, cancel the underlying URLSession task
-- [ ] extend `edith/AIProvider.swift` `AIProviderError` with two new cases: `missingApiKey` and `apiError(status: Int, type: String, message: String)`; update `AskEdithRunner.format(error:)` to render friendly strings for both
-- [ ] write unit tests using a fake transport that returns a canned `AsyncThrowingStream<Data, Error>` from a fixture SSE payload; assert provider yields the expected text deltas in order. Cover: happy path with two text-delta events, HTTP 401 → `apiError(status: 401, ...)`, HTTP 429 → `apiError(status: 429, ...)`, missing API key (test by injecting an env reader) → `missingApiKey`, server-sent `error` event → `apiError`
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 6
+- [x] extend `edith/AIProvider.swift` `AIProviderError` with two new cases: `missingApiKey` and `apiError(status: Int, type: String, message: String)`; update `AskEdithRunner.format(error:)` to render friendly strings for both
+- [x] write unit tests using a fake transport that returns a canned `AsyncThrowingStream<Data, Error>` from a fixture SSE payload; assert provider yields the expected text deltas in order. Cover: happy path with two text-delta events, HTTP 401 → `apiError(status: 401, ...)`, HTTP 429 → `apiError(status: 429, ...)`, missing API key (test by injecting an env reader) → `missingApiKey`, server-sent `error` event → `apiError`
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 6
 
 ### Task 6: Provider selection via frontmatter and intent dispatch
 

@@ -10,4 +10,6 @@ enum AIProviderError: Error, Equatable, Sendable {
     case terminatedBySignal(signal: Int32, stderr: String)
     case emptyOutput
     case cancelled
+    case missingApiKey
+    case apiError(status: Int, type: String, message: String)
 }
