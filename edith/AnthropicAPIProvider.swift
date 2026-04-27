@@ -42,17 +42,22 @@ struct AnthropicAPIProvider: AIProvider {
                         throw AIProviderError.apiError(status: http.statusCode, type: errType, message: errMessage)
                     }
                     var parser = AnthropicSSEParser()
+                    var sawTextDelta = false
                     for try await chunk in dataStream {
                         try Task.checkCancellation()
                         for event in parser.feed(chunk) {
                             switch event {
                             case .textDelta(let text):
+                                sawTextDelta = true
                                 continuation.yield(text)
                             case .messageStop:
+                                if !sawTextDelta {
+                                    throw AIProviderError.emptyOutput
+                                }
                                 continuation.finish()
                                 return
                             case .error(let type, let message):
-                                throw AIProviderError.apiError(status: http.statusCode, type: type, message: message)
+                                throw AIProviderError.apiError(status: 0, type: type, message: message)
                             }
                         }
                     }

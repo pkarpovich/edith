@@ -207,6 +207,17 @@ struct AnthropicSSEParserTests {
     }
 
     @Test
+    func crlfLinesWithLFLFTerminatorStripsTrailingCR() {
+        var parser = AnthropicSSEParser()
+        var bytes = Array("event: content_block_delta".utf8)
+        bytes.append(contentsOf: [0x0D, 0x0A])
+        bytes.append(contentsOf: Array(#"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"clean"}}"#.utf8))
+        bytes.append(contentsOf: [0x0D, 0x0A, 0x0A])
+        let events = parser.feed(Data(bytes))
+        #expect(events == [.textDelta("clean")])
+    }
+
+    @Test
     func mixedCRLFAndLFTerminatorsAcrossEvents() {
         var parser = AnthropicSSEParser()
         let firstBody = #"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"a"}}"#

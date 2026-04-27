@@ -61,7 +61,10 @@ nonisolated struct AnthropicSSEParser: Sendable {
         var eventName: String?
         var dataLines: [String] = []
         for line in normalized.split(separator: "\n", omittingEmptySubsequences: false) {
-            let lineString = String(line)
+            var lineString = String(line)
+            if lineString.hasSuffix("\r") {
+                lineString.removeLast()
+            }
             if lineString.hasPrefix(":") { continue }
             if let value = field(prefix: "event:", line: lineString) {
                 eventName = value

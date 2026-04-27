@@ -175,12 +175,29 @@ struct AnthropicAPIProviderTests {
             Issue.record("expected apiError")
         } catch let error as AIProviderError {
             switch error {
-            case .apiError(_, let type, let message):
+            case .apiError(let status, let type, let message):
+                #expect(status == 0)
                 #expect(type == "overloaded_error")
                 #expect(message == "Overloaded")
             default:
                 Issue.record("unexpected provider error: \(error)")
             }
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func messageStopWithoutTextDeltasThrowsEmptyOutput() async {
+        let body = sseEvent("message_stop", data: #"{"type":"message_stop"}"#)
+        let transport = FakeTransport(chunks: [Data(body.utf8)])
+        let provider = AnthropicAPIProvider(transport: transport, apiKeyProvider: { "key" })
+
+        do {
+            _ = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
+            Issue.record("expected emptyOutput error")
+        } catch let error as AIProviderError {
+            #expect(error == .emptyOutput)
         } catch {
             Issue.record("unexpected error: \(error)")
         }
