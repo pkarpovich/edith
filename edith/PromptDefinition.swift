@@ -1,8 +1,15 @@
 import Foundation
+import os
+
+nonisolated enum ProviderKind: String, Sendable, Equatable {
+    case cli
+    case api
+}
 
 nonisolated struct PromptDefinition: Sendable, Equatable {
     let model: String?
     let effort: String?
+    let provider: ProviderKind
     let body: String
 }
 
@@ -20,12 +27,14 @@ extension PromptDefinition {
             return PromptDefinition(
                 model: kv["model"],
                 effort: kv["effort"],
+                provider: resolveProvider(kv["provider"]),
                 body: body.trimmingCharacters(in: .whitespacesAndNewlines)
             )
         }
         return PromptDefinition(
             model: nil,
             effort: nil,
+            provider: .cli,
             body: stripped.trimmingCharacters(in: .whitespacesAndNewlines)
         )
     }
@@ -51,6 +60,16 @@ extension PromptDefinition {
         }
         return body
     }
+}
+
+nonisolated private func resolveProvider(_ raw: String?) -> ProviderKind {
+    guard let raw, !raw.isEmpty else { return .cli }
+    let normalized = raw.lowercased()
+    if let kind = ProviderKind(rawValue: normalized) {
+        return kind
+    }
+    Logger.edith.warning("PromptDefinition: unknown provider value '\(raw, privacy: .public)' — falling back to cli")
+    return .cli
 }
 
 nonisolated private func stripLeadingCommentBlock(_ text: String) -> String {

@@ -133,12 +133,12 @@ The user picks which provider runs each Shortcut by adding `provider:` to the pr
 
 ### Task 6: Provider selection via frontmatter and intent dispatch
 
-- [ ] extend `edith/PromptDefinition.swift` to parse a `provider:` frontmatter key with values `cli` (default) or `api`. Unknown values fall back to `cli` with a logged warning
-- [ ] in `edith/AskEdithIntent.swift`, extend `PreparedPrompt` with `provider: ProviderKind` (a small enum local to this file or a shared type — caller's preference); `prepare(path:selection:)` populates it from the parsed definition
-- [ ] in `AskEdithIntent.perform()`, replace the hard-coded `ClaudeCLIProvider()` instantiation with a small factory: `cli` → `ClaudeCLIProvider()`, `api` → `AnthropicAPIProvider(transport: URLSessionAnthropicTransport())`
-- [ ] write unit tests for `PromptDefinition.parse` covering the new `provider:` field (missing → cli, `cli`, `api`, unknown → cli with warning) and for `AskEdithIntent.prepare` returning the right `provider` value
-- [ ] write a unit test that injects a fake provider into the intent runner path (if practical) showing the `api` branch is taken when frontmatter requests it; if intent factory is hard to inject, document the manual smoke test path instead
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 7
+- [x] extend `edith/PromptDefinition.swift` to parse a `provider:` frontmatter key with values `cli` (default) or `api`. Unknown values fall back to `cli` with a logged warning
+- [x] in `edith/AskEdithIntent.swift`, extend `PreparedPrompt` with `provider: ProviderKind` (a small enum local to this file or a shared type — caller's preference); `prepare(path:selection:)` populates it from the parsed definition
+- [x] in `AskEdithIntent.perform()`, replace the hard-coded `ClaudeCLIProvider()` instantiation with a small factory: `cli` → `ClaudeCLIProvider()`, `api` → `AnthropicAPIProvider(transport: URLSessionAnthropicTransport())`
+- [x] write unit tests for `PromptDefinition.parse` covering the new `provider:` field (missing → cli, `cli`, `api`, unknown → cli with warning) and for `AskEdithIntent.prepare` returning the right `provider` value
+- [x] write a unit test that injects a fake provider into the intent runner path (if practical) showing the `api` branch is taken when frontmatter requests it; if intent factory is hard to inject, document the manual smoke test path instead — covered by `makeProviderReturnsAnthropicAPIForApi` which asserts the factory returns the correct concrete type for the `.api` kind
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 7
 
 ### Task 7: Verify automated acceptance criteria
 

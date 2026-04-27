@@ -75,7 +75,6 @@ struct PromptDefinitionParseTests {
         let contents = """
         ---
         model: haiku
-        provider: foo
         timeout: 30
         ---
         body
@@ -180,6 +179,86 @@ struct PromptDefinitionCommentTests {
     }
 }
 
+struct PromptDefinitionProviderTests {
+    @Test
+    func defaultsToCliWhenFrontmatterAbsent() {
+        let def = PromptDefinition.parse(contents: "Hello {{selection}}")
+        #expect(def.provider == .cli)
+    }
+
+    @Test
+    func defaultsToCliWhenFrontmatterPresentWithoutProvider() {
+        let contents = """
+        ---
+        model: haiku
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .cli)
+    }
+
+    @Test
+    func parsesCliExplicitly() {
+        let contents = """
+        ---
+        provider: cli
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .cli)
+    }
+
+    @Test
+    func parsesApi() {
+        let contents = """
+        ---
+        provider: api
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .api)
+    }
+
+    @Test
+    func unknownProviderFallsBackToCli() {
+        let contents = """
+        ---
+        provider: bogus
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .cli)
+    }
+
+    @Test
+    func providerValueIsCaseInsensitive() {
+        let contents = """
+        ---
+        provider: API
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .api)
+    }
+
+    @Test
+    func emptyProviderValueFallsBackToCli() {
+        let contents = """
+        ---
+        provider:
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .cli)
+    }
+}
+
 struct PromptDefinitionNormalizeModelTests {
     @Test
     func extractsHaikuFromFullName() {
@@ -215,21 +294,21 @@ struct PromptDefinitionNormalizeModelTests {
 struct PromptDefinitionRenderTests {
     @Test
     func substitutesSelection() throws {
-        let def = PromptDefinition(model: nil, effort: nil, body: "Fix:\n\n{{selection}}")
+        let def = PromptDefinition(model: nil, effort: nil, provider: .cli, body: "Fix:\n\n{{selection}}")
         let result = try PromptDefinition.render(definition: def, variables: ["selection": "abc"])
         #expect(result == "Fix:\n\nabc")
     }
 
     @Test
     func missingSelectionAutoAppended() throws {
-        let def = PromptDefinition(model: nil, effort: nil, body: "Fix the text")
+        let def = PromptDefinition(model: nil, effort: nil, provider: .cli, body: "Fix the text")
         let result = try PromptDefinition.render(definition: def, variables: ["selection": "abc"])
         #expect(result == "Fix the text\n\nabc")
     }
 
     @Test
     func unknownPlaceholderThrows() {
-        let def = PromptDefinition(model: nil, effort: nil, body: "Fix {{nonsense}} {{selection}}")
+        let def = PromptDefinition(model: nil, effort: nil, provider: .cli, body: "Fix {{nonsense}} {{selection}}")
         #expect(throws: PromptParserError.unknownVariable(name: "nonsense")) {
             _ = try PromptDefinition.render(definition: def, variables: ["selection": "abc"])
         }
@@ -237,14 +316,14 @@ struct PromptDefinitionRenderTests {
 
     @Test
     func multipleSelectionOccurrencesReplaced() throws {
-        let def = PromptDefinition(model: nil, effort: nil, body: "{{selection}}\n---\n{{selection}}")
+        let def = PromptDefinition(model: nil, effort: nil, provider: .cli, body: "{{selection}}\n---\n{{selection}}")
         let result = try PromptDefinition.render(definition: def, variables: ["selection": "x"])
         #expect(result == "x\n---\nx")
     }
 
     @Test
     func selectionContainingPlaceholderSyntaxIsNotMisreadAsUnknownVariable() throws {
-        let def = PromptDefinition(model: nil, effort: nil, body: "Fix:\n{{selection}}")
+        let def = PromptDefinition(model: nil, effort: nil, provider: .cli, body: "Fix:\n{{selection}}")
         let result = try PromptDefinition.render(
             definition: def,
             variables: ["selection": "use {{name}} in templates"]
@@ -254,7 +333,7 @@ struct PromptDefinitionRenderTests {
 
     @Test
     func spacedPlaceholderIsRejectedAsUnknown() {
-        let def = PromptDefinition(model: nil, effort: nil, body: "Fix:\n{{ selection }}")
+        let def = PromptDefinition(model: nil, effort: nil, provider: .cli, body: "Fix:\n{{ selection }}")
         #expect(throws: (any Error).self) {
             _ = try PromptDefinition.render(definition: def, variables: ["selection": "abc"])
         }
