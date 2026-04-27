@@ -39,14 +39,6 @@ extension PromptDefinition {
         )
     }
 
-    nonisolated static func normalizeModel(_ input: String) -> String {
-        let lower = input.lowercased()
-        for keyword in ["haiku", "sonnet", "opus"] where lower.contains(keyword) {
-            return keyword
-        }
-        return input
-    }
-
     nonisolated static func render(definition: PromptDefinition, variables: [String: String]) throws -> String {
         var body = definition.body
         if !body.contains("{{selection}}") {

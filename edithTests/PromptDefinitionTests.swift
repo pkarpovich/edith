@@ -259,38 +259,6 @@ struct PromptDefinitionProviderTests {
     }
 }
 
-struct PromptDefinitionNormalizeModelTests {
-    @Test
-    func extractsHaikuFromFullName() {
-        #expect(PromptDefinition.normalizeModel("claude-haiku-4-5") == "haiku")
-    }
-
-    @Test
-    func extractsSonnetFromFullName() {
-        #expect(PromptDefinition.normalizeModel("claude-sonnet-4-6") == "sonnet")
-    }
-
-    @Test
-    func extractsOpusFromFullName() {
-        #expect(PromptDefinition.normalizeModel("claude-opus-4-7") == "opus")
-    }
-
-    @Test
-    func keywordPassesThrough() {
-        #expect(PromptDefinition.normalizeModel("haiku") == "haiku")
-    }
-
-    @Test
-    func unknownModelPassesThrough() {
-        #expect(PromptDefinition.normalizeModel("custom-model-x") == "custom-model-x")
-    }
-
-    @Test
-    func caseInsensitiveMatch() {
-        #expect(PromptDefinition.normalizeModel("CLAUDE-HAIKU-4") == "haiku")
-    }
-}
-
 struct PromptDefinitionRenderTests {
     @Test
     func substitutesSelection() throws {

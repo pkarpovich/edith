@@ -96,8 +96,14 @@ struct AnthropicAPIProvider: AIProvider {
     static func drainBody(_ stream: AsyncThrowingStream<Data, Error>, limit: Int) async throws -> String {
         var data = Data()
         for try await chunk in stream {
-            data.append(chunk)
-            if data.count >= limit { break }
+            let remaining = limit - data.count
+            if remaining <= 0 { break }
+            if chunk.count <= remaining {
+                data.append(chunk)
+            } else {
+                data.append(chunk.prefix(remaining))
+                break
+            }
         }
         return String(data: data, encoding: .utf8) ?? ""
     }
