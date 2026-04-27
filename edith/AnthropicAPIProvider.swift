@@ -54,7 +54,7 @@ struct AnthropicAPIProvider: AIProvider {
                             }
                         }
                     }
-                    continuation.finish()
+                    throw AIProviderError.truncatedStream
                 } catch is CancellationError {
                     continuation.finish(throwing: AIProviderError.cancelled)
                 } catch {

@@ -74,6 +74,20 @@ struct AskEdithIntentPrepareProviderTests {
     }
 
     @Test
+    func preparePreservesPinnedAnthropicModelId() throws {
+        let path = try Self.writeTempPrompt("""
+        ---
+        provider: api
+        model: claude-haiku-4-5-20251001
+        ---
+        Fix:
+        {{selection}}
+        """)
+        let prepared = try AskEdithIntent.prepare(path: path, selection: "abc")
+        #expect(prepared.model == "claude-haiku-4-5-20251001")
+    }
+
+    @Test
     func makeProviderReturnsClaudeCLIForCli() {
         let provider = AskEdithIntent.makeProvider(kind: .cli)
         #expect(provider is ClaudeCLIProvider)

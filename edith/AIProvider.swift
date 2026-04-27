@@ -12,4 +12,5 @@ enum AIProviderError: Error, Equatable, Sendable {
     case cancelled
     case missingApiKey
     case apiError(status: Int, type: String, message: String)
+    case truncatedStream
 }

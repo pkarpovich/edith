@@ -77,7 +77,7 @@ struct AskEdithIntent: AppIntent {
         )
         return PreparedPrompt(
             rendered: rendered,
-            model: definition.model.map(PromptDefinition.normalizeModel),
+            model: definition.model,
             effort: definition.effort,
             provider: definition.provider
         )

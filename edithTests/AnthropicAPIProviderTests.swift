@@ -216,6 +216,37 @@ struct AnthropicAPIProviderTests {
     }
 
     @Test
+    func streamWithoutMessageStopThrowsTruncatedStream() async {
+        let body = textDeltaEvent("partial")
+        let transport = FakeTransport(chunks: [Data(body.utf8)])
+        let provider = AnthropicAPIProvider(transport: transport, apiKeyProvider: { "key" })
+
+        do {
+            _ = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
+            Issue.record("expected truncatedStream error")
+        } catch let error as AIProviderError {
+            #expect(error == .truncatedStream)
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func emptyStreamThrowsTruncatedStream() async {
+        let transport = FakeTransport(chunks: [])
+        let provider = AnthropicAPIProvider(transport: transport, apiKeyProvider: { "key" })
+
+        do {
+            _ = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
+            Issue.record("expected truncatedStream error")
+        } catch let error as AIProviderError {
+            #expect(error == .truncatedStream)
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
+    }
+
+    @Test
     func buildRequestSetsHeadersAndBody() throws {
         let request = try AnthropicAPIProvider.buildRequest(apiKey: "secret", prompt: "hi", model: "haiku")
 

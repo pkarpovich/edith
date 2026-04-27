@@ -55,6 +55,8 @@ nonisolated enum AskEdithRunner {
             case .apiError(let status, let type, let message):
                 let preview = stderrPreview(message)
                 return "Anthropic API error (\(status) \(type)): \(preview)"
+            case .truncatedStream:
+                return "Anthropic API stream ended unexpectedly before completion."
             }
         }
         if let parserError = error as? PromptParserError {
