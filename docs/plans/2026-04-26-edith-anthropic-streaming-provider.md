@@ -142,10 +142,10 @@ The user picks which provider runs each Shortcut by adding `provider:` to the pr
 
 ### Task 7: Verify automated acceptance criteria
 
-- [ ] `xcodebuild -scheme edith build` passes with zero warnings
-- [ ] `xcodebuild -scheme edith test` passes with all unit tests green
-- [ ] all task checkboxes above are `[x]`
-- [ ] no `TODO` / `FIXME` left in files created or modified in Tasks 1–6
+- [x] `xcodebuild -scheme edith build` passes with zero warnings
+- [x] `xcodebuild -scheme edith test` passes with all unit tests green
+- [x] all task checkboxes above are `[x]`
+- [x] no `TODO` / `FIXME` left in files created or modified in Tasks 1–6
 
 ## Technical Details
 
