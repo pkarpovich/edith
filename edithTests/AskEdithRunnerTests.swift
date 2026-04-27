@@ -50,6 +50,92 @@ private struct DelayingProvider: AIProvider {
     }
 }
 
+private struct ChunkedProvider: AIProvider {
+    let chunks: [String]
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let chunks = chunks
+        return AsyncThrowingStream { continuation in
+            Task {
+                for chunk in chunks {
+                    continuation.yield(chunk)
+                    await Task.yield()
+                }
+                continuation.finish()
+            }
+        }
+    }
+}
+
+private struct ChunkThenErrorProvider: AIProvider {
+    let chunks: [String]
+    let error: any Error
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let chunks = chunks
+        let error = error
+        return AsyncThrowingStream { continuation in
+            Task {
+                for chunk in chunks {
+                    continuation.yield(chunk)
+                    await Task.yield()
+                }
+                continuation.finish(throwing: error)
+            }
+        }
+    }
+}
+
+private struct InfiniteChunkProvider: AIProvider {
+    let chunk: String
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let chunk = chunk
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                while !Task.isCancelled {
+                    continuation.yield(chunk)
+                    do {
+                        try await Task.sleep(for: .milliseconds(5))
+                    } catch {
+                        continuation.finish(throwing: error)
+                        return
+                    }
+                }
+                continuation.finish()
+            }
+            continuation.onTermination = { @Sendable _ in
+                task.cancel()
+            }
+        }
+    }
+}
+
+@MainActor
+private final class OverlayStateRecorder {
+    private(set) var states: [OverlayState] = []
+    private weak var model: OverlayStateModel?
+
+    init(model: OverlayStateModel) {
+        self.model = model
+        states.append(model.state)
+        rearm()
+    }
+
+    private func rearm() {
+        withObservationTracking {
+            _ = model?.state
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self, let model = self.model else { return }
+                self.states.append(model.state)
+                self.rearm()
+            }
+        }
+    }
+
+    func flush() async {
+        for _ in 0..<20 { await Task.yield() }
+    }
+}
+
 @MainActor
 struct AskEdithRunnerDriveTests {
     @Test
@@ -162,6 +248,93 @@ struct AskEdithRunnerDriveTests {
         #expect(calls.first?.prompt == "do the thing")
         #expect(calls.first?.model == "haiku")
         #expect(calls.first?.effort == "low")
+    }
+
+    @Test
+    func driveTransitionsThroughStreamingStatesForEachChunk() async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let recorder = OverlayStateRecorder(model: state)
+        let provider = ChunkedProvider(chunks: ["he", "llo"])
+        await AskEdithRunner.drive(
+            provider: provider,
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        await recorder.flush()
+        #expect(state.state == .ready(original: "hi", result: "hello"))
+        #expect(recorder.states.first == .processing(original: "hi"))
+        #expect(recorder.states.contains(.streaming(original: "hi", partial: "he")))
+        #expect(recorder.states.contains(.streaming(original: "hi", partial: "hello")))
+        #expect(recorder.states.last == .ready(original: "hi", result: "hello"))
+    }
+
+    @Test
+    func driveTransitionsToStreamingThenReadyWithSingleChunk() async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let recorder = OverlayStateRecorder(model: state)
+        let provider = ChunkedProvider(chunks: ["RESULT"])
+        await AskEdithRunner.drive(
+            provider: provider,
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        await recorder.flush()
+        #expect(state.state == .ready(original: "hi", result: "RESULT"))
+        #expect(recorder.states.contains(.streaming(original: "hi", partial: "RESULT")))
+    }
+
+    @Test
+    func driveTransitionsToErrorWhenStreamThrowsMidStream() async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let provider = ChunkThenErrorProvider(
+            chunks: ["partial"],
+            error: AIProviderError.notFound
+        )
+        await AskEdithRunner.drive(
+            provider: provider,
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        guard case .error(let original, let message) = state.state else {
+            Issue.record("Expected .error state, got \(state.state)")
+            return
+        }
+        #expect(original == "hi")
+        #expect(message.contains("Claude CLI not found"))
+    }
+
+    @Test
+    func driveCancellationMidStreamDoesNotFlipToTerminalState() async throws {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let provider = InfiniteChunkProvider(chunk: "x")
+        let task = Task { @MainActor in
+            await AskEdithRunner.drive(
+                provider: provider,
+                original: "hi",
+                prompt: "p",
+                model: nil,
+                effort: nil,
+                state: state
+            )
+        }
+        try await Task.sleep(for: .milliseconds(30))
+        task.cancel()
+        _ = await task.value
+        switch state.state {
+        case .processing, .streaming:
+            break
+        default:
+            Issue.record("Expected non-terminal state after cancellation, got \(state.state)")
+        }
     }
 
     @Test

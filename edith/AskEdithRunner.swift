@@ -17,6 +17,7 @@ nonisolated enum AskEdithRunner {
             for try await chunk in provider.run(prompt: prompt, model: model, effort: effort) {
                 try Task.checkCancellation()
                 result += chunk
+                state.state = .streaming(original: original, partial: result)
             }
             try Task.checkCancellation()
             state.state = .ready(original: original, result: result)

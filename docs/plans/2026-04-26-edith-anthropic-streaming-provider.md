@@ -102,11 +102,11 @@ The user picks which provider runs each Shortcut by adding `provider:` to the pr
 
 ### Task 3: Runner consumes chunks and updates overlay incrementally
 
-- [ ] update `edith/AskEdithRunner.drive` to iterate the provider's `AsyncThrowingStream`; on first chunk, transition from `.processing` to `.streaming(original, partial)`; on each subsequent chunk, append the delta to `partial` and republish `.streaming`; on stream completion, transition to `.ready(original, finalText)`
-- [ ] cancellation path: if Task is cancelled mid-stream, terminate without flipping state to anything terminal (overlay dismissal handled by coordinator already)
-- [ ] error path: any thrown error during iteration → existing `.error(original, message)` mapping via `format(error:)`; map a new `AIProviderError` case if needed (see Task 5)
-- [ ] write unit tests using a synthetic `AIProvider` that yields a known sequence of chunks, then asserts overlay model state went `.processing → .streaming(partial="he") → .streaming(partial="hello") → .ready(result="hello")` etc. Use a TestOverlayStateModel helper if one doesn't already exist
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
+- [x] update `edith/AskEdithRunner.drive` to iterate the provider's `AsyncThrowingStream`; on first chunk, transition from `.processing` to `.streaming(original, partial)`; on each subsequent chunk, append the delta to `partial` and republish `.streaming`; on stream completion, transition to `.ready(original, finalText)`
+- [x] cancellation path: if Task is cancelled mid-stream, terminate without flipping state to anything terminal (overlay dismissal handled by coordinator already)
+- [x] error path: any thrown error during iteration → existing `.error(original, message)` mapping via `format(error:)`; map a new `AIProviderError` case if needed (see Task 5)
+- [x] write unit tests using a synthetic `AIProvider` that yields a known sequence of chunks, then asserts overlay model state went `.processing → .streaming(partial="he") → .streaming(partial="hello") → .ready(result="hello")` etc. Use a TestOverlayStateModel helper if one doesn't already exist
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 4
 
 ### Task 4: SSE event parser and Anthropic model alias map
 
