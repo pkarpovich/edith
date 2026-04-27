@@ -95,10 +95,10 @@ The user picks which provider runs each Shortcut by adding `provider:` to the pr
 
 ### Task 2: OverlayState gets a streaming case
 
-- [ ] in `edith/OverlayState.swift`, add `case streaming(original: String, partial: String)`; equality / sendability mirrors the existing cases
-- [ ] in `edith/OverlayView.swift`, render `.streaming` similar to `.ready` (two-pane layout: original left, partial right) plus a small "streaming…" indicator under the right pane; key handling same as `.processing` (Esc dismisses, Enter is no-op until `.ready`)
-- [ ] update unit tests for any `OverlayState`-touching helpers (equality, transitions if any)
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
+- [x] in `edith/OverlayState.swift`, add `case streaming(original: String, partial: String)`; equality / sendability mirrors the existing cases
+- [x] in `edith/OverlayView.swift`, render `.streaming` similar to `.ready` (two-pane layout: original left, partial right) plus a small "streaming…" indicator under the right pane; key handling same as `.processing` (Esc dismisses, Enter is no-op until `.ready`)
+- [x] update unit tests for any `OverlayState`-touching helpers (equality, transitions if any)
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 3
 
 ### Task 3: Runner consumes chunks and updates overlay incrementally
 
