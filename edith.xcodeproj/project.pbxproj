@@ -28,10 +28,14 @@
 		9C63F473719EAA49C5D1EC60 /* AskEdithRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E69B3BD12AABFC5C9152D613 /* AskEdithRunner.swift */; };
 		9E077A899E308D936337DF2C /* PromptDefinitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F564BB7F6580F2ECD63F950 /* PromptDefinitionTests.swift */; };
 		A9601D1A459245E24235FB9B /* PromptFileLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A5F394CDDE7FB2C2BBF19C /* PromptFileLoaderTests.swift */; };
+		ACAB6BC9B66C313578EFDC0E /* AnthropicSSEParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5B756BEF007B0933C251F60 /* AnthropicSSEParser.swift */; };
 		AF027E74B9F22408ACA24B5B /* Logger+Edith.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */; };
+		AFC4BE2FD1C60BB291B67D99 /* AnthropicModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6FEF1DF838312593EA3FA5F /* AnthropicModels.swift */; };
 		BDCD4648DD65E34EEE475B05 /* OverlayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7909FDB47F9ADFC83B7856 /* OverlayState.swift */; };
+		C20327E695A1FFB6E826565C /* AnthropicSSEParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18FB163294CC950D30C72433 /* AnthropicSSEParserTests.swift */; };
 		C4ED1C8B9F67D16099B0CBED /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F88D6E153A88FB2B1AE446 /* OverlayView.swift */; };
 		CA0B01330D3CA3D9AAE86268 /* AskEdithRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */; };
+		CB5B00F0BA256FD9104AEDEF /* AnthropicModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A3A61DB0C1583B1670A9436 /* AnthropicModelsTests.swift */; };
 		CFD708C8F6E575EEB6FA7B83 /* PermissionsCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A4AAC72B151441FA8092C6 /* PermissionsCheckTests.swift */; };
 		D3979C4320D7D24BADDA68A9 /* SelectionReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42E9440F0BE8E8028D8FEB78 /* SelectionReaderTests.swift */; };
 		DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573A2B1295778B262D7F7943 /* EdithApp.swift */; };
@@ -53,6 +57,7 @@
 /* Begin PBXFileReference section */
 		00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithIntent.swift; sourceTree = "<group>"; };
 		097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdithShortcutsProvider.swift; sourceTree = "<group>"; };
+		18FB163294CC950D30C72433 /* AnthropicSSEParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicSSEParserTests.swift; sourceTree = "<group>"; };
 		1E66D620072513E135FBBCD9 /* PromptFileLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptFileLoader.swift; sourceTree = "<group>"; };
 		3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithRunnerTests.swift; sourceTree = "<group>"; };
 		42E9440F0BE8E8028D8FEB78 /* SelectionReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReaderTests.swift; sourceTree = "<group>"; };
@@ -67,6 +72,7 @@
 		8F564BB7F6580F2ECD63F950 /* PromptDefinitionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptDefinitionTests.swift; sourceTree = "<group>"; };
 		93A4AAC72B151441FA8092C6 /* PermissionsCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheckTests.swift; sourceTree = "<group>"; };
 		99BE0CBADEBEAF53E43FDF67 /* OverlayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayCoordinator.swift; sourceTree = "<group>"; };
+		9A3A61DB0C1583B1670A9436 /* AnthropicModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicModelsTests.swift; sourceTree = "<group>"; };
 		9B33818881AAE4DAF3989D60 /* PasteboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardSnapshot.swift; sourceTree = "<group>"; };
 		9C24D500520A25F2EDD09F72 /* MockProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProvider.swift; sourceTree = "<group>"; };
 		9FAFF56CD97B150CDC0DCDE3 /* PlaceholderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTests.swift; sourceTree = "<group>"; };
@@ -76,6 +82,8 @@
 		C30C5B8A27794C8B321C1568 /* PromptDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptDefinition.swift; sourceTree = "<group>"; };
 		C3810FBBB5E0EE5BBB138E5F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C3D8BADCE5161DE504EE7C76 /* SelectionReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReader.swift; sourceTree = "<group>"; };
+		C5B756BEF007B0933C251F60 /* AnthropicSSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicSSEParser.swift; sourceTree = "<group>"; };
+		C6FEF1DF838312593EA3FA5F /* AnthropicModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicModels.swift; sourceTree = "<group>"; };
 		D2806009A9138FA1490ABA8E /* PasteboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardSnapshotTests.swift; sourceTree = "<group>"; };
 		D317F4BB16F73C404C0C973C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E371F2FF861AD01B27568073 /* PermissionsCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheck.swift; sourceTree = "<group>"; };
@@ -111,6 +119,8 @@
 			isa = PBXGroup;
 			children = (
 				F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */,
+				C6FEF1DF838312593EA3FA5F /* AnthropicModels.swift */,
+				C5B756BEF007B0933C251F60 /* AnthropicSSEParser.swift */,
 				00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */,
 				E69B3BD12AABFC5C9152D613 /* AskEdithRunner.swift */,
 				B81E5C7E2A39AD725D77A013 /* ClaudeCLIProvider.swift */,
@@ -137,6 +147,8 @@
 		7A7F0A184E137A36707BADE6 /* edithTests */ = {
 			isa = PBXGroup;
 			children = (
+				9A3A61DB0C1583B1670A9436 /* AnthropicModelsTests.swift */,
+				18FB163294CC950D30C72433 /* AnthropicSSEParserTests.swift */,
 				87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */,
 				3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */,
 				6F8A267490CC85B72EB9C2E3 /* ClaudeCLIProviderTests.swift */,
@@ -249,6 +261,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */,
+				AFC4BE2FD1C60BB291B67D99 /* AnthropicModels.swift in Sources */,
+				ACAB6BC9B66C313578EFDC0E /* AnthropicSSEParser.swift in Sources */,
 				1C165CD3149CE9BF052FA725 /* AskEdithIntent.swift in Sources */,
 				9C63F473719EAA49C5D1EC60 /* AskEdithRunner.swift in Sources */,
 				53A8B5A795BEA9F0AE59557A /* ClaudeCLIProvider.swift in Sources */,
@@ -274,6 +288,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB5B00F0BA256FD9104AEDEF /* AnthropicModelsTests.swift in Sources */,
+				C20327E695A1FFB6E826565C /* AnthropicSSEParserTests.swift in Sources */,
 				ED43ECCA5D819F96949A1DA4 /* AskEdithIntentTests.swift in Sources */,
 				CA0B01330D3CA3D9AAE86268 /* AskEdithRunnerTests.swift in Sources */,
 				2655EBFDEC32CD5F709A796A /* ClaudeCLIProviderTests.swift in Sources */,
