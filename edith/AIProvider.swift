@@ -1,7 +1,7 @@
 import Foundation
 
 protocol AIProvider: Sendable {
-    func run(prompt: String, model: String?, effort: String?) async throws -> String
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error>
 }
 
 enum AIProviderError: Error, Equatable, Sendable {

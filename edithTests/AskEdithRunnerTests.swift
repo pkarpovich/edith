@@ -4,24 +4,49 @@ import Testing
 
 private struct ConstantProvider: AIProvider {
     let output: String
-    func run(prompt: String, model: String?, effort: String?) async throws -> String {
-        try Task.checkCancellation()
-        return output
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let output = output
+        return AsyncThrowingStream { continuation in
+            do {
+                try Task.checkCancellation()
+                continuation.yield(output)
+                continuation.finish()
+            } catch {
+                continuation.finish(throwing: error)
+            }
+        }
     }
 }
 
 private struct ThrowingProvider: AIProvider {
     let error: any Error
-    func run(prompt: String, model: String?, effort: String?) async throws -> String {
-        throw error
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let error = error
+        return AsyncThrowingStream { continuation in
+            continuation.finish(throwing: error)
+        }
     }
 }
 
 private struct DelayingProvider: AIProvider {
     let delay: Duration
-    func run(prompt: String, model: String?, effort: String?) async throws -> String {
-        try await Task.sleep(for: delay)
-        return prompt
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let delay = self.delay
+        let prompt = prompt
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    try await Task.sleep(for: delay)
+                    continuation.yield(prompt)
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { @Sendable _ in
+                task.cancel()
+            }
+        }
     }
 }
 

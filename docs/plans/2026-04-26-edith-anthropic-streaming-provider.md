@@ -87,11 +87,11 @@ The user picks which provider runs each Shortcut by adding `provider:` to the pr
 
 ### Task 1: Streaming AIProvider protocol with existing providers migrated
 
-- [ ] change `edith/AIProvider.swift` so `run` returns `AsyncThrowingStream<String, Error>` instead of `async throws -> String`; each yielded String is a **delta** (the new tokens), not the accumulated result; document the contract in the protocol's leading comment line
-- [ ] update `edith/MockProvider.swift` to expose the same shape: yields the prompt uppercased as a single chunk and finishes (so existing call sites get equivalent behavior)
-- [ ] update `edith/ClaudeCLIProvider.swift` to also yield one terminal chunk with the full collected output, then finish; nothing about the CLI invocation changes
-- [ ] update unit tests for both providers to consume the stream and assert the joined output equals the expected single string; add a test asserting MockProvider yields exactly one element
-- [ ] run `xcodebuild build` + `xcodebuild test` — must pass before Task 2
+- [x] change `edith/AIProvider.swift` so `run` returns `AsyncThrowingStream<String, Error>` instead of `async throws -> String`; each yielded String is a **delta** (the new tokens), not the accumulated result; document the contract in the protocol's leading comment line
+- [x] update `edith/MockProvider.swift` to expose the same shape: yields the prompt uppercased as a single chunk and finishes (so existing call sites get equivalent behavior)
+- [x] update `edith/ClaudeCLIProvider.swift` to also yield one terminal chunk with the full collected output, then finish; nothing about the CLI invocation changes
+- [x] update unit tests for both providers to consume the stream and assert the joined output equals the expected single string; add a test asserting MockProvider yields exactly one element
+- [x] run `xcodebuild build` + `xcodebuild test` — must pass before Task 2
 
 ### Task 2: OverlayState gets a streaming case
 
