@@ -68,7 +68,7 @@ nonisolated private func resolveProvider(_ raw: String?) -> ProviderKind {
     if let kind = ProviderKind(rawValue: normalized) {
         return kind
     }
-    Logger.edith.warning("PromptDefinition: unknown provider value '\(raw, privacy: .public)' — falling back to cli")
+    Logger.edith.warning("PromptDefinition: unknown provider value '\(raw, privacy: .public)' - falling back to cli")
     return .cli
 }
 

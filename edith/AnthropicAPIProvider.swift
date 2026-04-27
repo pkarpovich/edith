@@ -7,6 +7,8 @@ struct AnthropicAPIProvider: AIProvider {
     static let defaultMaxTokens = 4096
     static let errorBodyLimit = 4096
 
+    private static let effortWarningLogged = OSAllocatedUnfairLock<Bool>(initialState: false)
+
     let transport: any AnthropicTransport
     let apiKeyProvider: @Sendable () -> String?
 
@@ -27,7 +29,7 @@ struct AnthropicAPIProvider: AIProvider {
             let task = Task {
                 do {
                     if let effort, !effort.isEmpty {
-                        Logger.edith.warning("AnthropicAPIProvider: 'effort' is ignored for the API provider in this phase")
+                        Self.warnEffortIgnoredOnce()
                     }
                     guard let apiKey = apiKeyProvider(), !apiKey.isEmpty else {
                         throw AIProviderError.missingApiKey
@@ -93,6 +95,17 @@ struct AnthropicAPIProvider: AIProvider {
             if data.count >= limit { break }
         }
         return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    private static func warnEffortIgnoredOnce() {
+        let shouldLog = effortWarningLogged.withLock { logged in
+            guard !logged else { return false }
+            logged = true
+            return true
+        }
+        if shouldLog {
+            Logger.edith.warning("AnthropicAPIProvider: 'effort' is ignored for the API provider in this phase")
+        }
     }
 
     static func parseErrorBody(_ body: String, status: Int) -> (type: String, message: String) {
