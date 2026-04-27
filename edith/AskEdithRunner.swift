@@ -47,7 +47,7 @@ nonisolated enum AskEdithRunner {
                     ? "Claude terminated by signal \(signal)."
                     : "Claude terminated by signal \(signal): \(preview)"
             case .emptyOutput:
-                return "Claude returned no output."
+                return "Provider returned no output."
             case .cancelled:
                 return "Cancelled."
             case .missingApiKey:

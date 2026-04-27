@@ -5,6 +5,8 @@ protocol AnthropicTransport: Sendable {
 }
 
 struct URLSessionAnthropicTransport: AnthropicTransport {
+    static let bufferFlushBytes = 4 * 1024
+
     let session: URLSession
 
     init(session: URLSession = .shared) {
@@ -23,7 +25,7 @@ struct URLSessionAnthropicTransport: AnthropicTransport {
                     var buffer = Data()
                     for try await byte in bytes {
                         buffer.append(byte)
-                        if byte == 0x0A {
+                        if byte == 0x0A || buffer.count >= Self.bufferFlushBytes {
                             continuation.yield(buffer)
                             buffer.removeAll(keepingCapacity: true)
                         }

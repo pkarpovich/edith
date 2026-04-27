@@ -163,6 +163,52 @@ struct PromptDefinitionCommentTests {
     }
 
     @Test
+    func singleCommentBeforeFrontmatterIsStripped() {
+        let contents = """
+        # Smoke test: title only.
+        ---
+        provider: api
+        model: haiku
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.provider == .api)
+        #expect(def.model == "haiku")
+        #expect(def.body == "body")
+    }
+
+    @Test
+    func leadingCommentPreservedWhenFrontmatterMalformed() {
+        let contents = """
+        # Title
+        ---
+        not a key value
+        ---
+        body
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.model == nil)
+        #expect(def.effort == nil)
+        #expect(def.body == contents)
+    }
+
+    @Test
+    func leadingCommentPreservedWhenClosingDelimiterMissing() {
+        let contents = """
+        # Title
+        ---
+        model: haiku
+
+        body without closing
+        """
+        let def = PromptDefinition.parse(contents: contents)
+        #expect(def.model == nil)
+        #expect(def.effort == nil)
+        #expect(def.body == contents)
+    }
+
+    @Test
     func blankLineBetweenCommentsAndFrontmatterIsTolerated() {
         let contents = """
         # docs

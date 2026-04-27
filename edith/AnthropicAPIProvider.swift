@@ -98,7 +98,7 @@ struct AnthropicAPIProvider: AIProvider {
         for try await chunk in stream {
             let remaining = limit - data.count
             if remaining <= 0 { break }
-            if chunk.count <= remaining {
+            if chunk.count < remaining {
                 data.append(chunk)
             } else {
                 data.append(chunk.prefix(remaining))

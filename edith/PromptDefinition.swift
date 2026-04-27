@@ -35,7 +35,7 @@ extension PromptDefinition {
             model: nil,
             effort: nil,
             provider: .cli,
-            body: stripped.trimmingCharacters(in: .whitespacesAndNewlines)
+            body: normalized.trimmingCharacters(in: .whitespacesAndNewlines)
         )
     }
 
@@ -75,12 +75,16 @@ nonisolated private func stripLeadingCommentBlock(_ text: String) -> String {
             break
         }
     }
-    guard commentCount >= 2 else { return text }
+    guard commentCount >= 1 else { return text }
     var dropTotal = commentCount
     while dropTotal < lines.count,
           lines[dropTotal].trimmingCharacters(in: .whitespaces).isEmpty {
         dropTotal += 1
     }
+    if commentCount >= 2 {
+        return lines.dropFirst(dropTotal).joined(separator: "\n")
+    }
+    guard dropTotal < lines.count, lines[dropTotal] == "---" else { return text }
     return lines.dropFirst(dropTotal).joined(separator: "\n")
 }
 
