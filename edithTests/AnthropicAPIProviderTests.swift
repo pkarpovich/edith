@@ -265,7 +265,7 @@ struct AnthropicAPIProviderTests {
 
     @Test
     func buildRequestSetsHeadersAndBody() throws {
-        let request = try AnthropicAPIProvider.buildRequest(apiKey: "secret", prompt: "hi", model: "haiku")
+        let request = try AnthropicAPIProvider.buildRequest(apiKey: "secret", prompt: "hi", model: "claude-haiku-4-5-20251001")
 
         #expect(request.url == AnthropicAPIProvider.endpoint)
         #expect(request.httpMethod == "POST")
@@ -277,7 +277,7 @@ struct AnthropicAPIProviderTests {
         let bodyData = try #require(request.httpBody)
         let object = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
         let json = try #require(object)
-        #expect(json["model"] as? String == "claude-haiku-4-5")
+        #expect(json["model"] as? String == "claude-haiku-4-5-20251001")
         #expect(json["max_tokens"] as? Int == AnthropicAPIProvider.defaultMaxTokens)
         #expect(json["stream"] as? Bool == true)
         let messages = json["messages"] as? [[String: String]]
