@@ -99,8 +99,8 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 7: [Final] Update documentation
 
-- [ ] if `README.md` documents env-var setup, replace with "Open Settings… and paste your key" (verify whether README mentions API key at all before editing)
-- [ ] update any inline doc comments on `AnthropicAPIProvider.apiKeyProvider` to mention the Keychain → env fallback order
+- [x] if `README.md` documents env-var setup, replace with "Open Settings… and paste your key" (no `README.md` exists in the repo — verified via `Glob **/README*` finds only files under `.build/checkouts/`; nothing to update)
+- [x] update any inline doc comments on `AnthropicAPIProvider.apiKeyProvider` to mention the Keychain → env fallback order (no existing inline doc comments on `apiKeyProvider`; the resolution order is already explicit in `defaultAPIKeyProvider`'s body — `store.read() ?? environment["ANTHROPIC_API_KEY"]` — and per the repo's no-comments convention no new comment was added)
 
 ## Technical Details
 
