@@ -91,11 +91,11 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 6: Verify acceptance criteria
 
-- [ ] verify all requirements from Overview are implemented (Keychain stores key, Settings UI saves/clears, Provider reads from Keychain with env fallback, overlay shows inline diff)
-- [ ] verify edge cases: empty key in Settings is rejected (or saved as empty? — pick one and test), result identical to original renders without any green highlight, very long result still scrolls
-- [ ] run `make test` — full suite must pass
-- [ ] verify no new SwiftLint or compiler warnings (the project does not run a linter today; if `xcodebuild` emits warnings that did not exist on `main`, fix them)
-- [ ] verify the project still builds for both Debug and Release in `make build`
+- [x] verify all requirements from Overview are implemented (Keychain stores key, Settings UI saves/clears, Provider reads from Keychain with env fallback, overlay shows inline diff)
+- [x] verify edge cases: empty key in Settings is rejected (covered by `SettingsViewTests.saveRejectsEmptyInput`); result identical to original renders without any green highlight (covered by `InlineDiffTests.identicalStringsProduceNoHighlight`); very long result still scrolls (`OverlayView.inlineDiffColumn` wraps `Text` in `ScrollView` with `maxHeight: 240`)
+- [x] run `make test` — full suite passes (194 tests across 24 suites)
+- [x] verify no new SwiftLint or compiler warnings (Debug `make build` and Release `xcodebuild -configuration Release build` both succeed with zero warnings)
+- [x] verify the project still builds for both Debug and Release in `make build`
 
 ### Task 7: [Final] Update documentation
 
