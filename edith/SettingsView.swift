@@ -31,7 +31,11 @@ final class SettingsModel: ObservableObject {
     }
 
     func refreshStatus() {
-        status = store.read() == nil ? .noKey : .keySaved
+        if let key = store.read(), !key.isEmpty {
+            status = .keySaved
+        } else {
+            status = .noKey
+        }
     }
 
     func save() {

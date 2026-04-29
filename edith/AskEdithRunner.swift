@@ -51,7 +51,7 @@ nonisolated enum AskEdithRunner {
             case .cancelled:
                 return "Cancelled."
             case .missingApiKey:
-                return "Anthropic API key missing - set ANTHROPIC_API_KEY."
+                return "Anthropic API key missing - open Settings (Cmd+,) to add it."
             case .apiError(let status, let type, let message):
                 let preview = stderrPreview(message)
                 return "Anthropic API error (\(status) \(type)): \(preview)"

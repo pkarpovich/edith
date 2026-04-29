@@ -109,6 +109,15 @@ struct SettingsViewTests {
     }
 
     @Test
+    func refreshStatusReportsNoKeyWhenStoredValueIsEmpty() throws {
+        let backend = FakeKeychainBackend()
+        try KeychainStore(backend: backend).write("")
+        let model = SettingsModel(store: KeychainStore(backend: backend))
+        model.refreshStatus()
+        #expect(model.status == .noKey)
+    }
+
+    @Test
     func saveWritesToKeychainAndClearsInput() {
         let (model, backend) = makeModel()
         model.keyInput = "sk-abc"
