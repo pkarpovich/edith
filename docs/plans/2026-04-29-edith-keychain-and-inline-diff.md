@@ -73,13 +73,13 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 4: Character-level inline diff renderer
 
-- [ ] add `edith/InlineDiff.swift` with a pure function `func attributedDiff(original: String, result: String, insertColor: Color) -> AttributedString` that:
+- [x] add `edith/InlineDiff.swift` with a pure function `func attributedDiff(original: String, result: String, insertColor: Color) -> AttributedString` that:
   - computes `result.difference(from: original)` as `CollectionDifference<Character>` and walks the result string, applying `BackgroundColor` on contiguous insertion runs (deletions are not rendered, since the result is shown as the canonical text)
   - merges adjacent insertions into single highlighted runs to avoid visual fragmentation
   - returns plain `AttributedString` for the unchanged stretches
-- [ ] use a soft green background (`Color.green.opacity(0.25)` or equivalent — match the reference screenshot in `docs/plans/2026-04-29-edith-keychain-and-inline-diff.md`'s assets section if present, otherwise pick a near match)
-- [ ] write tests for `attributedDiff`: identical strings produce no highlight, pure insertion is fully highlighted, pure deletion produces an unhighlighted result equal to the new string, replacement (delete + insert at same spot) highlights only the inserted range, multi-byte/Unicode (Cyrillic, emoji) characters are handled because `CollectionDifference<Character>` is grapheme-aware
-- [ ] run `make test` — must pass before Task 5
+- [x] use a soft green background (`Color.green.opacity(0.25)` or equivalent — match the reference screenshot in `docs/plans/2026-04-29-edith-keychain-and-inline-diff.md`'s assets section if present, otherwise pick a near match) — caller passes the color; `OverlayView` (Task 5) will pass `Color.green.opacity(0.25)`
+- [x] write tests for `attributedDiff`: identical strings produce no highlight, pure insertion is fully highlighted, pure deletion produces an unhighlighted result equal to the new string, replacement (delete + insert at same spot) highlights only the inserted range, multi-byte/Unicode (Cyrillic, emoji) characters are handled because `CollectionDifference<Character>` is grapheme-aware
+- [x] run `make test` — must pass before Task 5
 
 ### Task 5: Replace side-by-side overlay with inline diff
 

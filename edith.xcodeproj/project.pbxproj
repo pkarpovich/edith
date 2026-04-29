@@ -12,6 +12,7 @@
 		094C0BDFC77EE923A03B196D /* AnthropicTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A67819E2F182F738D95C9D3 /* AnthropicTransport.swift */; };
 		0F669C2258B44E108F098711 /* PasteboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2806009A9138FA1490ABA8E /* PasteboardSnapshotTests.swift */; };
 		10DC0F593136CA83AB57CDC1 /* OverlayStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA250A6F16FDBC395C08B0DA /* OverlayStateTests.swift */; };
+		10E9C2415DF33E34D9510EFB /* InlineDiffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96CE905E88AAE14F350332A /* InlineDiffTests.swift */; };
 		18B90B0856C12673AFC8C898 /* MockProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */; };
 		1C165CD3149CE9BF052FA725 /* AskEdithIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DE9756CCA7F797E7EFCF0F /* AskEdithIntent.swift */; };
 		2390122FD2903E93A51468D0 /* SelectionReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D8BADCE5161DE504EE7C76 /* SelectionReader.swift */; };
@@ -22,6 +23,7 @@
 		28A9DA3BEBC462FF3367BA5C /* Subprocess in Frameworks */ = {isa = PBXBuildFile; productRef = 03FF6FD9E4B924855747F9D2 /* Subprocess */; };
 		35C4D74ED20F716E2BB1EE6C /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0B94C234C1D82BC7AE3F9F /* KeychainStore.swift */; };
 		392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */; };
+		3FDCEBFBBB47269B85AB5649 /* InlineDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45BA3E067829D0574EE6A85C /* InlineDiff.swift */; };
 		45207BB29CA7C8611A9FC9DC /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139C7A5B24C69D147C88DA2B /* SettingsView.swift */; };
 		473A1BA4F123826A32CD9289 /* PromptFileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E66D620072513E135FBBCD9 /* PromptFileLoader.swift */; };
 		4844E0B2FB3230A8D9C35AD5 /* Paster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */; };
@@ -72,6 +74,7 @@
 		2FAC7F9FCCCF4B6B033CDB62 /* SettingsViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTests.swift; sourceTree = "<group>"; };
 		3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskEdithRunnerTests.swift; sourceTree = "<group>"; };
 		42E9440F0BE8E8028D8FEB78 /* SelectionReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReaderTests.swift; sourceTree = "<group>"; };
+		45BA3E067829D0574EE6A85C /* InlineDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineDiff.swift; sourceTree = "<group>"; };
 		4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Paster.swift; sourceTree = "<group>"; };
 		573A2B1295778B262D7F7943 /* EdithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdithApp.swift; sourceTree = "<group>"; };
 		6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProviderTests.swift; sourceTree = "<group>"; };
@@ -98,6 +101,7 @@
 		C3D8BADCE5161DE504EE7C76 /* SelectionReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionReader.swift; sourceTree = "<group>"; };
 		C5B756BEF007B0933C251F60 /* AnthropicSSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicSSEParser.swift; sourceTree = "<group>"; };
 		C6FEF1DF838312593EA3FA5F /* AnthropicModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicModels.swift; sourceTree = "<group>"; };
+		C96CE905E88AAE14F350332A /* InlineDiffTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineDiffTests.swift; sourceTree = "<group>"; };
 		D2806009A9138FA1490ABA8E /* PasteboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardSnapshotTests.swift; sourceTree = "<group>"; };
 		D317F4BB16F73C404C0C973C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E371F2FF861AD01B27568073 /* PermissionsCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheck.swift; sourceTree = "<group>"; };
@@ -143,6 +147,7 @@
 				573A2B1295778B262D7F7943 /* EdithApp.swift */,
 				097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */,
 				D317F4BB16F73C404C0C973C /* Info.plist */,
+				45BA3E067829D0574EE6A85C /* InlineDiff.swift */,
 				8C0B94C234C1D82BC7AE3F9F /* KeychainStore.swift */,
 				C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */,
 				9C24D500520A25F2EDD09F72 /* MockProvider.swift */,
@@ -171,6 +176,7 @@
 				87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */,
 				3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */,
 				6F8A267490CC85B72EB9C2E3 /* ClaudeCLIProviderTests.swift */,
+				C96CE905E88AAE14F350332A /* InlineDiffTests.swift */,
 				0D3D64EB92DAFDA8F10F798F /* KeychainStoreTests.swift */,
 				6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */,
 				EA250A6F16FDBC395C08B0DA /* OverlayStateTests.swift */,
@@ -291,6 +297,7 @@
 				53A8B5A795BEA9F0AE59557A /* ClaudeCLIProvider.swift in Sources */,
 				DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */,
 				630B519FAFD5876F0791A7CD /* EdithShortcutsProvider.swift in Sources */,
+				3FDCEBFBBB47269B85AB5649 /* InlineDiff.swift in Sources */,
 				35C4D74ED20F716E2BB1EE6C /* KeychainStore.swift in Sources */,
 				AF027E74B9F22408ACA24B5B /* Logger+Edith.swift in Sources */,
 				F6A18C4EBAA4C61A914734CE /* MockProvider.swift in Sources */,
@@ -319,6 +326,7 @@
 				ED43ECCA5D819F96949A1DA4 /* AskEdithIntentTests.swift in Sources */,
 				CA0B01330D3CA3D9AAE86268 /* AskEdithRunnerTests.swift in Sources */,
 				2655EBFDEC32CD5F709A796A /* ClaudeCLIProviderTests.swift in Sources */,
+				10E9C2415DF33E34D9510EFB /* InlineDiffTests.swift in Sources */,
 				DE87BF86BD9A8FEC24B4FEDC /* KeychainStoreTests.swift in Sources */,
 				18B90B0856C12673AFC8C898 /* MockProviderTests.swift in Sources */,
 				10DC0F593136CA83AB57CDC1 /* OverlayStateTests.swift in Sources */,
