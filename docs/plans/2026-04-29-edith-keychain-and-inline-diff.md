@@ -57,11 +57,11 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 2: Settings scene with API key field
 
-- [ ] add `edith/SettingsView.swift`: SwiftUI form with a `SecureField` (toggle to plain `TextField` for "Show"), a "Save" button (calls `KeychainStore.write`), a "Clear" button (calls `KeychainStore.delete`), and a status line that reads "key saved" / "no key" by checking `KeychainStore.read()` on appear and after each action
-- [ ] register a `Settings { SettingsView() }` scene in `EdithApp.swift` so `Cmd+,` opens the standard macOS settings window
-- [ ] add a "Settings…" `Button` to the `MenuBarExtra` menu in `EdithApp.swift:18-34` that calls `NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)` (or the modern `SettingsLink` API if available on the target macOS — verify against current SDK)
-- [ ] write tests for `SettingsView` view-model (extract `SettingsModel: ObservableObject` if needed): save reflects in `KeychainStore`, clear removes entry, "Show" toggle does not leak the field beyond the binding
-- [ ] run `make test` — must pass before Task 3
+- [x] add `edith/SettingsView.swift`: SwiftUI form with a `SecureField` (toggle to plain `TextField` for "Show"), a "Save" button (calls `KeychainStore.write`), a "Clear" button (calls `KeychainStore.delete`), and a status line that reads "key saved" / "no key" by checking `KeychainStore.read()` on appear and after each action
+- [x] register a `Settings { SettingsView() }` scene in `EdithApp.swift` so `Cmd+,` opens the standard macOS settings window
+- [x] add a "Settings…" `Button` to the `MenuBarExtra` menu in `EdithApp.swift:18-34` that calls `NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)` (or the modern `SettingsLink` API if available on the target macOS — verify against current SDK)
+- [x] write tests for `SettingsView` view-model (extract `SettingsModel: ObservableObject` if needed): save reflects in `KeychainStore`, clear removes entry, "Show" toggle does not leak the field beyond the binding
+- [x] run `make test` — must pass before Task 3
 
 ### Task 3: Provider reads from Keychain with env fallback
 
