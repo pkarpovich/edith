@@ -49,11 +49,11 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 1: Keychain wrapper around Security.framework
 
-- [ ] create `edith/KeychainStore.swift` with a protocol `KeychainBackend` and a real implementation `SecItemKeychainBackend` so the wrapper is unit-testable
-- [ ] expose `KeychainStore` API: `read() -> String?`, `write(_ value: String) throws`, `delete() throws`; service = bundle id (`space.pkarpovich.edith`), account = `anthropic-api-key`, accessibility = `kSecAttrAccessibleAfterFirstUnlock`
-- [ ] surface a typed `KeychainError` enum (e.g. `.itemNotFound`, `.unexpectedStatus(OSStatus)`, `.encodingFailed`)
-- [ ] write tests for `KeychainStore` against an in-memory `FakeKeychainBackend`: read-after-write, overwrite-existing, delete-then-read returns nil, error from backend bubbles up
-- [ ] run `make test` — must pass before Task 2
+- [x] create `edith/KeychainStore.swift` with a protocol `KeychainBackend` and a real implementation `SecItemKeychainBackend` so the wrapper is unit-testable
+- [x] expose `KeychainStore` API: `read() -> String?`, `write(_ value: String) throws`, `delete() throws`; service = bundle id (`space.pkarpovich.edith`), account = `anthropic-api-key`, accessibility = `kSecAttrAccessibleAfterFirstUnlock`
+- [x] surface a typed `KeychainError` enum (e.g. `.itemNotFound`, `.unexpectedStatus(OSStatus)`, `.encodingFailed`)
+- [x] write tests for `KeychainStore` against an in-memory `FakeKeychainBackend`: read-after-write, overwrite-existing, delete-then-read returns nil, error from backend bubbles up
+- [x] run `make test` — must pass before Task 2
 
 ### Task 2: Settings scene with API key field
 
