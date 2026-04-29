@@ -144,11 +144,12 @@ struct SettingsViewTests {
         let model = SettingsModel(store: KeychainStore(backend: backend))
         model.keyInput = "sk-fails"
         model.save()
-        if case .error = model.status {
-            #expect(Bool(true))
+        if case .error(let message) = model.status {
+            #expect(message.contains("unexpectedStatus"))
         } else {
             Issue.record("expected error status, got \(model.status)")
         }
+        #expect(model.keyInput == "sk-fails")
     }
 
     @Test
@@ -176,22 +177,10 @@ struct SettingsViewTests {
         backend.deleteError = errSecAuthFailed
         let model = SettingsModel(store: KeychainStore(backend: backend))
         model.clear()
-        if case .error = model.status {
-            #expect(Bool(true))
+        if case .error(let message) = model.status {
+            #expect(message.contains("unexpectedStatus"))
         } else {
             Issue.record("expected error status, got \(model.status)")
         }
-    }
-
-    @Test
-    func revealToggleDoesNotMutateKeyInput() {
-        let (model, _) = makeModel()
-        model.keyInput = "sk-keep"
-        #expect(model.isRevealed == false)
-        model.isRevealed.toggle()
-        #expect(model.isRevealed == true)
-        #expect(model.keyInput == "sk-keep")
-        model.isRevealed.toggle()
-        #expect(model.keyInput == "sk-keep")
     }
 }

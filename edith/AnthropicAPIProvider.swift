@@ -20,13 +20,15 @@ struct AnthropicAPIProvider: AIProvider {
         self.apiKeyProvider = apiKeyProvider
     }
 
-    nonisolated static func defaultAPIKeyProvider(keychain: KeychainStore = KeychainStore()) -> @Sendable () -> String? {
-        let store = keychain
+    nonisolated static func defaultAPIKeyProvider(
+        keychain: KeychainStore = KeychainStore(),
+        environment: @Sendable @escaping () -> [String: String] = { ProcessInfo.processInfo.environment }
+    ) -> @Sendable () -> String? {
         return {
-            if let key = store.read(), !key.isEmpty {
+            if let key = keychain.read(), !key.isEmpty {
                 return key
             }
-            return ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"]
+            return environment()["ANTHROPIC_API_KEY"]
         }
     }
 

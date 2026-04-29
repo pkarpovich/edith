@@ -72,6 +72,9 @@ private final class FakeKeychainBackend: KeychainBackend, @unchecked Sendable {
             return errSecItemNotFound
         }
         storage[index].data = data
+        if let accessible = attributes[kSecAttrAccessible as String] as? String {
+            storage[index].accessible = accessible
+        }
         return errSecSuccess
     }
 
@@ -122,6 +125,7 @@ struct KeychainStoreTests {
         try store.write("second")
         #expect(store.read() == "second")
         #expect(backend.entries().count == 1)
+        #expect(backend.entries()[0].accessible == (kSecAttrAccessibleAfterFirstUnlock as String))
     }
 
     @Test

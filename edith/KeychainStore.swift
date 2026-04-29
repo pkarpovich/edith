@@ -79,6 +79,7 @@ struct KeychainStore: Sendable {
         ]
         let updateAttributes: [String: Any] = [
             kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
         ]
         let updateStatus = backend.update(query: baseQuery, attributes: updateAttributes)
         if updateStatus == errSecSuccess {

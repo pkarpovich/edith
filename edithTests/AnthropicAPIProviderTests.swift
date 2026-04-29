@@ -335,7 +335,10 @@ struct AnthropicAPIProviderTests {
     func defaultAPIKeyProviderReadsFromKeychainFirst() {
         let backend = StubKeychainBackend(value: "from-keychain")
         let store = KeychainStore(backend: backend)
-        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(keychain: store)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { ["ANTHROPIC_API_KEY": "from-env"] }
+        )
         #expect(provider() == "from-keychain")
     }
 
@@ -343,17 +346,32 @@ struct AnthropicAPIProviderTests {
     func defaultAPIKeyProviderFallsBackToEnvironment() {
         let backend = StubKeychainBackend(value: nil)
         let store = KeychainStore(backend: backend)
-        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(keychain: store)
-        let envValue = ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"]
-        #expect(provider() == envValue)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { ["ANTHROPIC_API_KEY": "from-env"] }
+        )
+        #expect(provider() == "from-env")
     }
 
     @Test
-    func defaultAPIKeyProviderTreatsEmptyKeychainValueAsAbsent() throws {
+    func defaultAPIKeyProviderTreatsEmptyKeychainValueAsAbsent() {
         let backend = StubKeychainBackend(value: "")
         let store = KeychainStore(backend: backend)
-        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(keychain: store)
-        let envValue = ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"]
-        #expect(provider() == envValue)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { ["ANTHROPIC_API_KEY": "from-env"] }
+        )
+        #expect(provider() == "from-env")
+    }
+
+    @Test
+    func defaultAPIKeyProviderReturnsNilWhenNeitherSourcePresent() {
+        let backend = StubKeychainBackend(value: nil)
+        let store = KeychainStore(backend: backend)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { [:] }
+        )
+        #expect(provider() == nil)
     }
 }

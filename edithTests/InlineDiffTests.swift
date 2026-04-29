@@ -97,6 +97,14 @@ private func segments(_ attributed: AttributedString) -> [Segment] {
         #expect(reconstructed == "Привет, как дела?")
     }
 
+    @Test func insertColorParameterIsAppliedToHighlightedRuns() {
+        let result = attributedDiff(original: "ac", result: "abc", insertColor: .red)
+        let highlightedColors = result.runs.compactMap { run -> Color? in
+            run.backgroundColor
+        }
+        #expect(highlightedColors == [.red])
+    }
+
     @Test func russianSentenceSnapshotMatchesExpectedRuns() {
         let result = attributedDiff(
             original: "привет как дела",
