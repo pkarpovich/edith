@@ -7,41 +7,43 @@ enum KeychainError: Error, Equatable {
 }
 
 protocol KeychainBackend: Sendable {
-    func copyMatching(_ query: [String: Any]) -> (status: OSStatus, item: Data?)
-    func add(_ attributes: [String: Any]) -> OSStatus
-    func update(query: [String: Any], attributes: [String: Any]) -> OSStatus
-    func delete(_ query: [String: Any]) -> OSStatus
+    nonisolated func copyMatching(_ query: [String: Any]) -> (status: OSStatus, item: Data?)
+    nonisolated func add(_ attributes: [String: Any]) -> OSStatus
+    nonisolated func update(query: [String: Any], attributes: [String: Any]) -> OSStatus
+    nonisolated func delete(_ query: [String: Any]) -> OSStatus
 }
 
 struct SecItemKeychainBackend: KeychainBackend {
-    func copyMatching(_ query: [String: Any]) -> (status: OSStatus, item: Data?) {
+    nonisolated init() {}
+
+    nonisolated func copyMatching(_ query: [String: Any]) -> (status: OSStatus, item: Data?) {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         return (status, result as? Data)
     }
 
-    func add(_ attributes: [String: Any]) -> OSStatus {
+    nonisolated func add(_ attributes: [String: Any]) -> OSStatus {
         return SecItemAdd(attributes as CFDictionary, nil)
     }
 
-    func update(query: [String: Any], attributes: [String: Any]) -> OSStatus {
+    nonisolated func update(query: [String: Any], attributes: [String: Any]) -> OSStatus {
         return SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
     }
 
-    func delete(_ query: [String: Any]) -> OSStatus {
+    nonisolated func delete(_ query: [String: Any]) -> OSStatus {
         return SecItemDelete(query as CFDictionary)
     }
 }
 
 struct KeychainStore: Sendable {
-    static let defaultService = "space.pkarpovich.edith"
-    static let defaultAccount = "anthropic-api-key"
+    nonisolated static let defaultService = "space.pkarpovich.edith"
+    nonisolated static let defaultAccount = "anthropic-api-key"
 
     let service: String
     let account: String
     let backend: any KeychainBackend
 
-    init(
+    nonisolated init(
         service: String = KeychainStore.defaultService,
         account: String = KeychainStore.defaultAccount,
         backend: any KeychainBackend = SecItemKeychainBackend()
@@ -51,7 +53,7 @@ struct KeychainStore: Sendable {
         self.backend = backend
     }
 
-    func read() -> String? {
+    nonisolated func read() -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -66,7 +68,7 @@ struct KeychainStore: Sendable {
         return String(data: data, encoding: .utf8)
     }
 
-    func write(_ value: String) throws {
+    nonisolated func write(_ value: String) throws {
         guard let data = value.data(using: .utf8) else {
             throw KeychainError.encodingFailed
         }
@@ -94,7 +96,7 @@ struct KeychainStore: Sendable {
         }
     }
 
-    func delete() throws {
+    nonisolated func delete() throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

@@ -65,11 +65,11 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 3: Provider reads from Keychain with env fallback
 
-- [ ] in `AnthropicAPIProvider.swift:15-23`, change the default `apiKeyProvider` closure to `{ KeychainStore.read() ?? ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"] }`
-- [ ] update `AskEdithIntent.makeProvider()` (`AskEdithIntent.swift:87-94`) — no change required if the default closure now does the right thing; verify by reading the call site
-- [ ] update `AnthropicAPIProviderTests.swift` to inject a closure that returns a test value for the existing tests; do not exercise the real Keychain in tests
-- [ ] add a new test that the default closure path is wired by constructing `AnthropicAPIProvider()` (default args) inside a test that pre-populates a `FakeKeychainBackend` via a test-only initializer or a static seam — keep the seam minimal
-- [ ] run `make test` — must pass before Task 4
+- [x] in `AnthropicAPIProvider.swift:15-23`, change the default `apiKeyProvider` closure to `{ KeychainStore.read() ?? ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"] }`
+- [x] update `AskEdithIntent.makeProvider()` (`AskEdithIntent.swift:87-94`) — no change required if the default closure now does the right thing; verify by reading the call site
+- [x] update `AnthropicAPIProviderTests.swift` to inject a closure that returns a test value for the existing tests; do not exercise the real Keychain in tests
+- [x] add a new test that the default closure path is wired by constructing `AnthropicAPIProvider()` (default args) inside a test that pre-populates a `FakeKeychainBackend` via a test-only initializer or a static seam — keep the seam minimal
+- [x] run `make test` — must pass before Task 4
 
 ### Task 4: Character-level inline diff renderer
 
