@@ -83,11 +83,11 @@ The two features are bundled because both require touching app-level wiring and 
 
 ### Task 5: Replace side-by-side overlay with inline diff
 
-- [ ] in `OverlayView.swift:64`, replace the `.ready(original, result)` arm: drop the two-column `HStack`, render a single `ScrollView` containing a `Text(attributedDiff(original: model.state.original, result: result))` with the existing font and selection settings
-- [ ] adjust the panel width in `OverlayCoordinator.swift:97-102` if the single column should be narrower than 640pt — pick one width that works for both `.streaming` and `.ready` so the panel does not jump between states
-- [ ] keep the panel header / footer hints unchanged (Enter to confirm, Esc to dismiss)
-- [ ] write a snapshot-style test for the rendering: build the `AttributedString` via `attributedDiff`, assert it matches the expected runs for a representative example (e.g. `"привет как дела"` → `"Привет, как дела?"`)
-- [ ] run `make test` — must pass before Task 6
+- [x] in `OverlayView.swift:64`, replace the `.ready(original, result)` arm: drop the two-column `HStack`, render a single `ScrollView` containing a `Text(attributedDiff(original: model.state.original, result: result))` with the existing font and selection settings
+- [x] adjust the panel width in `OverlayCoordinator.swift:97-102` if the single column should be narrower than 640pt — pick one width that works for both `.streaming` and `.ready` so the panel does not jump between states (kept 640pt; streaming still uses two columns so width must accommodate both)
+- [x] keep the panel header / footer hints unchanged (Enter to confirm, Esc to dismiss)
+- [x] write a snapshot-style test for the rendering: build the `AttributedString` via `attributedDiff`, assert it matches the expected runs for a representative example (e.g. `"привет как дела"` → `"Привет, как дела?"`)
+- [x] run `make test` — must pass before Task 6
 
 ### Task 6: Verify acceptance criteria
 

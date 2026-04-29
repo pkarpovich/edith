@@ -96,4 +96,19 @@ private func segments(_ attributed: AttributedString) -> [Segment] {
         let reconstructed = segs.map(\.text).joined()
         #expect(reconstructed == "Привет, как дела?")
     }
+
+    @Test func russianSentenceSnapshotMatchesExpectedRuns() {
+        let result = attributedDiff(
+            original: "привет как дела",
+            result: "Привет, как дела?",
+            insertColor: .green
+        )
+        #expect(segments(result) == [
+            Segment(text: "П", highlighted: true),
+            Segment(text: "ривет", highlighted: false),
+            Segment(text: ",", highlighted: true),
+            Segment(text: " как дела", highlighted: false),
+            Segment(text: "?", highlighted: true),
+        ])
+    }
 }

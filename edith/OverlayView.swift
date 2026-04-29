@@ -5,10 +5,7 @@ struct OverlayView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 16) {
-                column(title: "Original", body: model.state.original)
-                rightColumn
-            }
+            content
             Divider()
             HStack(spacing: 20) {
                 hints
@@ -23,8 +20,40 @@ struct OverlayView: View {
     }
 
     @ViewBuilder
+    private var content: some View {
+        switch model.state {
+        case .ready(let original, let result):
+            inlineDiffColumn(original: original, result: result)
+        default:
+            HStack(alignment: .top, spacing: 16) {
+                column(title: "Original", body: model.state.original)
+                rightColumn
+            }
+        }
+    }
+
+    private func inlineDiffColumn(original: String, result: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Result")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+            ScrollView {
+                Text(attributedDiff(original: original, result: result, insertColor: Color.green.opacity(0.25)))
+                    .font(.body)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxHeight: 240)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
     private var rightColumn: some View {
         switch model.state {
+        case .ready:
+            EmptyView()
         case .processing:
             VStack(alignment: .leading, spacing: 6) {
                 Text("Result")
@@ -61,8 +90,6 @@ struct OverlayView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-        case .ready(_, let result):
-            column(title: "Result", body: result)
         case .error(_, let message):
             VStack(alignment: .leading, spacing: 6) {
                 Text("Error")
