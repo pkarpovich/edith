@@ -40,6 +40,27 @@ struct OverlayView: View {
                 .frame(maxWidth: .infinity, maxHeight: 200, alignment: .topLeading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+        case .streaming(_, let partial):
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Result")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                ScrollView {
+                    Text(partial)
+                        .font(.body)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxHeight: 200)
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("streaming…")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         case .ready(_, let result):
             column(title: "Result", body: result)
         case .error(_, let message):
@@ -65,6 +86,8 @@ struct OverlayView: View {
     private var hints: some View {
         switch model.state {
         case .processing:
+            hint(label: "Cancel", symbol: "escape")
+        case .streaming:
             hint(label: "Cancel", symbol: "escape")
         case .ready:
             hint(label: "Apply", symbol: "return")

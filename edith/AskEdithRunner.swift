@@ -13,7 +13,12 @@ nonisolated enum AskEdithRunner {
         state: OverlayStateModel
     ) async {
         do {
-            let result = try await provider.run(prompt: prompt, model: model, effort: effort)
+            var result = ""
+            for try await chunk in provider.run(prompt: prompt, model: model, effort: effort) {
+                try Task.checkCancellation()
+                result += chunk
+                state.state = .streaming(original: original, partial: result)
+            }
             try Task.checkCancellation()
             state.state = .ready(original: original, result: result)
         } catch is CancellationError {
@@ -42,9 +47,16 @@ nonisolated enum AskEdithRunner {
                     ? "Claude terminated by signal \(signal)."
                     : "Claude terminated by signal \(signal): \(preview)"
             case .emptyOutput:
-                return "Claude returned no output."
+                return "Provider returned no output."
             case .cancelled:
                 return "Cancelled."
+            case .missingApiKey:
+                return "Anthropic API key missing - set ANTHROPIC_API_KEY."
+            case .apiError(let status, let type, let message):
+                let preview = stderrPreview(message)
+                return "Anthropic API error (\(status) \(type)): \(preview)"
+            case .truncatedStream:
+                return "Anthropic API stream ended unexpectedly before completion."
             }
         }
         if let parserError = error as? PromptParserError {

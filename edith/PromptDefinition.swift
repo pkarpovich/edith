@@ -1,8 +1,15 @@
 import Foundation
+import os
+
+nonisolated enum ProviderKind: String, Sendable, Equatable {
+    case cli
+    case api
+}
 
 nonisolated struct PromptDefinition: Sendable, Equatable {
     let model: String?
     let effort: String?
+    let provider: ProviderKind
     let body: String
 }
 
@@ -20,22 +27,16 @@ extension PromptDefinition {
             return PromptDefinition(
                 model: kv["model"],
                 effort: kv["effort"],
+                provider: resolveProvider(kv["provider"]),
                 body: body.trimmingCharacters(in: .whitespacesAndNewlines)
             )
         }
         return PromptDefinition(
             model: nil,
             effort: nil,
-            body: stripped.trimmingCharacters(in: .whitespacesAndNewlines)
+            provider: .cli,
+            body: normalized.trimmingCharacters(in: .whitespacesAndNewlines)
         )
-    }
-
-    nonisolated static func normalizeModel(_ input: String) -> String {
-        let lower = input.lowercased()
-        for keyword in ["haiku", "sonnet", "opus"] where lower.contains(keyword) {
-            return keyword
-        }
-        return input
     }
 
     nonisolated static func render(definition: PromptDefinition, variables: [String: String]) throws -> String {
@@ -53,6 +54,16 @@ extension PromptDefinition {
     }
 }
 
+nonisolated private func resolveProvider(_ raw: String?) -> ProviderKind {
+    guard let raw, !raw.isEmpty else { return .cli }
+    let normalized = raw.lowercased()
+    if let kind = ProviderKind(rawValue: normalized) {
+        return kind
+    }
+    Logger.edith.warning("PromptDefinition: unknown provider value '\(raw, privacy: .public)' - falling back to cli")
+    return .cli
+}
+
 nonisolated private func stripLeadingCommentBlock(_ text: String) -> String {
     let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
     var commentCount = 0
@@ -64,12 +75,16 @@ nonisolated private func stripLeadingCommentBlock(_ text: String) -> String {
             break
         }
     }
-    guard commentCount >= 2 else { return text }
+    guard commentCount >= 1 else { return text }
     var dropTotal = commentCount
     while dropTotal < lines.count,
           lines[dropTotal].trimmingCharacters(in: .whitespaces).isEmpty {
         dropTotal += 1
     }
+    if commentCount >= 2 {
+        return lines.dropFirst(dropTotal).joined(separator: "\n")
+    }
+    guard dropTotal < lines.count, lines[dropTotal] == "---" else { return text }
     return lines.dropFirst(dropTotal).joined(separator: "\n")
 }
 

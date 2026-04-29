@@ -17,15 +17,29 @@ struct MockProvider: AIProvider {
         self.recorder = recorder
     }
 
-    func run(prompt: String, model: String?, effort: String?) async throws -> String {
-        if delay > .zero {
-            try await Task.sleep(for: delay)
-        } else {
-            try Task.checkCancellation()
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+        let delay = self.delay
+        let recorder = self.recorder
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    if delay > .zero {
+                        try await Task.sleep(for: delay)
+                    } else {
+                        try Task.checkCancellation()
+                    }
+                    if let recorder {
+                        await recorder.record(prompt: prompt, model: model, effort: effort)
+                    }
+                    continuation.yield(prompt.uppercased())
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { @Sendable _ in
+                task.cancel()
+            }
         }
-        if let recorder {
-            await recorder.record(prompt: prompt, model: model, effort: effort)
-        }
-        return prompt.uppercased()
     }
 }

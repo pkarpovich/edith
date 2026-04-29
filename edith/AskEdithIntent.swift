@@ -43,9 +43,8 @@ struct AskEdithIntent: AppIntent {
             return .result()
         }
 
-        let provider = ClaudeCLIProvider()
-
         let driveTask = Task { @MainActor in
+            let provider = Self.makeProvider(kind: prepared.provider)
             await AskEdithRunner.drive(
                 provider: provider,
                 original: selection,
@@ -78,14 +77,26 @@ struct AskEdithIntent: AppIntent {
         )
         return PreparedPrompt(
             rendered: rendered,
-            model: definition.model.map(PromptDefinition.normalizeModel),
-            effort: definition.effort
+            model: definition.model,
+            effort: definition.effort,
+            provider: definition.provider
         )
+    }
+
+    @MainActor
+    static func makeProvider(kind: ProviderKind) -> any AIProvider {
+        switch kind {
+        case .cli:
+            return ClaudeCLIProvider()
+        case .api:
+            return AnthropicAPIProvider(transport: URLSessionAnthropicTransport())
+        }
     }
 
     nonisolated struct PreparedPrompt: Sendable, Equatable {
         let rendered: String
         let model: String?
         let effort: String?
+        let provider: ProviderKind
     }
 }
