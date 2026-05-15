@@ -2,7 +2,7 @@ name: edith
 options:
   bundleIdPrefix: space.pkarpovich
   deploymentTarget:
-    macOS: "26.4"
+    macOS: "26.0"
   developmentLanguage: en
   createIntermediateGroups: true
   generateEmptyDirectories: true
@@ -29,7 +29,7 @@ targets:
   edith:
     type: application
     platform: macOS
-    deploymentTarget: "26.4"
+    deploymentTarget: "26.0"
     sources:
       - path: edith
         excludes:
@@ -87,12 +87,12 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: edith/Info.plist
-        MACOSX_DEPLOYMENT_TARGET: "26.4"
+        MACOSX_DEPLOYMENT_TARGET: "26.0"
 
   edithTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "26.4"
+    deploymentTarget: "26.0"
     sources:
       - path: edithTests
     dependencies:
@@ -103,7 +103,7 @@ targets:
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: GGG699AY79
-        MACOSX_DEPLOYMENT_TARGET: "26.4"
+        MACOSX_DEPLOYMENT_TARGET: "26.0"
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Edith.app/Contents/MacOS/Edith"
         BUNDLE_LOADER: "$(TEST_HOST)"
