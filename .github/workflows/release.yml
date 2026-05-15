@@ -1,0 +1,177 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  SCHEME: edith
+  TEAM_ID: GGG699AY79
+  PRODUCT_NAME: Edith
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 45
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install XcodeGen and create-dmg
+        run: brew install xcodegen create-dmg
+
+      - name: Import Developer ID certificate
+        env:
+          CERTIFICATE_P12: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          echo "$CERTIFICATE_P12" | base64 --decode > $RUNNER_TEMP/cert.p12
+          security import $RUNNER_TEMP/cert.p12 \
+            -P "$CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH login.keychain
+          rm -f $RUNNER_TEMP/cert.p12
+
+      - name: Resolve version and build number
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(date +%Y.%m.%d-%H%M)
+          fi
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          echo "Building $PRODUCT_NAME $VERSION (build $BUILD_NUMBER)"
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Patch Info.plist with version and build number
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" edith/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" edith/Info.plist
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -scheme $SCHEME \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/$PRODUCT_NAME.xcarchive \
+            -destination 'generic/platform=macOS' \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            DEVELOPMENT_TEAM=$TEAM_ID
+
+      - name: Export signed app
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>developer-id</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Developer ID Application</string>
+            <key>teamID</key>
+            <string>$TEAM_ID</string>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/$PRODUCT_NAME.xcarchive \
+            -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist \
+            -exportPath $RUNNER_TEMP/export
+
+          ls -la $RUNNER_TEMP/export/
+
+      - name: Notarize
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$ASC_KEY_CONTENT" > ~/private_keys/AuthKey_$ASC_KEY_ID.p8
+
+          APP_PATH=$RUNNER_TEMP/export/$PRODUCT_NAME.app
+          ZIP_PATH=$RUNNER_TEMP/$PRODUCT_NAME-notarize.zip
+
+          ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+
+          xcrun notarytool submit "$ZIP_PATH" \
+            --key ~/private_keys/AuthKey_$ASC_KEY_ID.p8 \
+            --key-id $ASC_KEY_ID \
+            --issuer $ASC_ISSUER_ID \
+            --wait
+
+          xcrun stapler staple "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+
+      - name: Build DMG
+        run: |
+          STAGING=$RUNNER_TEMP/dmg-staging
+          mkdir -p "$STAGING"
+          cp -R "$RUNNER_TEMP/export/$PRODUCT_NAME.app" "$STAGING/"
+
+          DMG_PATH=$RUNNER_TEMP/$PRODUCT_NAME-$VERSION.dmg
+
+          create-dmg \
+            --volname "$PRODUCT_NAME $VERSION" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "$PRODUCT_NAME.app" 175 190 \
+            --hide-extension "$PRODUCT_NAME.app" \
+            --app-drop-link 425 190 \
+            "$DMG_PATH" \
+            "$STAGING/" || true
+
+          if [ ! -f "$DMG_PATH" ]; then
+            hdiutil create -volname "$PRODUCT_NAME" -srcfolder "$STAGING" -ov -format UDZO "$DMG_PATH"
+          fi
+
+          xcrun stapler staple "$DMG_PATH" || true
+          echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG_PATH }}
+          name: ${{ env.PRODUCT_NAME }} ${{ env.VERSION }}
+          draft: false
+          generate_release_notes: true
+
+      - name: Upload DMG as artifact (for workflow_dispatch runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PRODUCT_NAME }}-${{ env.VERSION }}-dmg
+          path: ${{ env.DMG_PATH }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/signing.keychain-db || true
+          rm -rf ~/private_keys
