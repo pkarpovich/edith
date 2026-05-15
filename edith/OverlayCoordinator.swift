@@ -15,18 +15,23 @@ final class OverlayCoordinator {
     private var panel: OverlayPanel?
     private var monitor: Any?
     private var continuation: CheckedContinuation<Outcome, Never>?
+    private var driveFactory: (@MainActor () async -> Void)?
+    private var activeDrive: Task<Void, Never>?
 
-    init(initial: OverlayState) {
-        self.model = OverlayStateModel(initial: initial)
+    init(initial: OverlayState, promptName: String? = nil, modelLabel: String? = nil) {
+        self.model = OverlayStateModel(initial: initial, promptName: promptName, modelLabel: modelLabel)
     }
 
-    func present() async -> Outcome {
+    func present(drive: (@MainActor () async -> Void)? = nil) async -> Outcome {
         await withCheckedContinuation { continuation in
             self.continuation = continuation
 
             let hosting = NSHostingView(rootView: OverlayView(model: model))
             let fitting = hosting.fittingSize
-            let size = NSSize(width: max(fitting.width, 640), height: max(fitting.height, 180))
+            let size = NSSize(
+                width: max(fitting.width, DesignTokens.Window.width),
+                height: max(fitting.height, 120)
+            )
             let rect = Self.centeredRect(for: size)
 
             let panel = OverlayPanel(contentRect: rect)
@@ -35,19 +40,34 @@ final class OverlayCoordinator {
 
             monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
                 guard let self else { return event }
-                switch event.keyCode {
-                case 36, 76:
-                    self.confirm()
-                    return nil
-                case 53:
-                    self.dismiss()
-                    return nil
-                default:
-                    return event
-                }
+                return self.handleKey(event)
+            }
+
+            if let drive {
+                driveFactory = drive
+                startDrive()
             }
 
             panel.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    private func handleKey(_ event: NSEvent) -> NSEvent? {
+        switch event.keyCode {
+        case 36, 76: // return / numpad enter
+            confirm()
+            return nil
+        case 53: // escape
+            dismiss()
+            return nil
+        case 15: // R
+            if event.modifierFlags.contains(.command) {
+                retry()
+                return nil
+            }
+            return event
+        default:
+            return event
         }
     }
 
@@ -58,6 +78,21 @@ final class OverlayCoordinator {
 
     func dismiss() {
         resolve(.dismissed)
+    }
+
+    private func retry() {
+        guard case .error = model.state, let driveFactory else { return }
+        activeDrive?.cancel()
+        model.state = .processing(original: model.state.original)
+        self.driveFactory = driveFactory
+        startDrive()
+    }
+
+    private func startDrive() {
+        guard let driveFactory else { return }
+        activeDrive = Task { @MainActor in
+            await driveFactory()
+        }
     }
 
     private func resolve(_ outcome: Outcome) {
@@ -90,6 +125,9 @@ final class OverlayCoordinator {
             NSEvent.removeMonitor(monitor)
             self.monitor = nil
         }
+        activeDrive?.cancel()
+        activeDrive = nil
+        driveFactory = nil
         panel?.orderOut(nil)
         panel = nil
     }

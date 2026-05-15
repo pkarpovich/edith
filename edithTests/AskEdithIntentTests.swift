@@ -13,6 +13,37 @@ struct AskEdithIntentTests {
     func supportedModesIsBackground() {
         #expect(AskEdithIntent.supportedModes == .background)
     }
+
+    @Test
+    func promptNameExtractsBasenameStem() {
+        #expect(AskEdithIntent.promptName(from: "/Users/me/.config/edith/fix-ru.txt") == "fix-ru")
+        #expect(AskEdithIntent.promptName(from: "fix-en.md") == "fix-en")
+        #expect(AskEdithIntent.promptName(from: "/tmp/no-ext") == "no-ext")
+    }
+
+    @Test
+    func promptNameReturnsNilForEmptyOrTrailingSlash() {
+        #expect(AskEdithIntent.promptName(from: "") == nil)
+        #expect(AskEdithIntent.promptName(from: "/") == nil)
+    }
+
+    @Test
+    func modelLabelComposesProviderAndModel() {
+        #expect(
+            AskEdithIntent.modelLabel(provider: .api, model: "claude-haiku-4-5-20251001")
+                == "claude · api · claude-haiku-4-5-20251001"
+        )
+        #expect(
+            AskEdithIntent.modelLabel(provider: .cli, model: "haiku")
+                == "claude · cli · haiku"
+        )
+    }
+
+    @Test
+    func modelLabelUsesDefaultWhenModelMissing() {
+        #expect(AskEdithIntent.modelLabel(provider: .api, model: nil) == "claude · api · default")
+        #expect(AskEdithIntent.modelLabel(provider: .cli, model: "") == "claude · cli · default")
+    }
 }
 
 struct AskEdithIntentPrepareProviderTests {

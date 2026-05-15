@@ -21,8 +21,12 @@ enum OverlayState: Equatable, Sendable {
 @Observable
 final class OverlayStateModel {
     var state: OverlayState
+    let promptName: String?
+    let modelLabel: String?
 
-    init(initial: OverlayState) {
+    init(initial: OverlayState, promptName: String? = nil, modelLabel: String? = nil) {
         self.state = initial
+        self.promptName = promptName
+        self.modelLabel = modelLabel
     }
 }

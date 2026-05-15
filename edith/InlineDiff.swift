@@ -1,6 +1,11 @@
 import SwiftUI
 
-func attributedDiff(original: String, result: String, insertColor: Color) -> AttributedString {
+func attributedDiff(
+    original: String,
+    result: String,
+    insertColor: Color,
+    insertForeground: Color? = nil
+) -> AttributedString {
     let diff = result.difference(from: original)
     var insertedOffsets = Set<Int>()
     for change in diff.insertions {
@@ -22,6 +27,9 @@ func attributedDiff(original: String, result: String, insertColor: Color) -> Att
         var piece = AttributedString(segment)
         if runIsInsert {
             piece.backgroundColor = insertColor
+            if let insertForeground {
+                piece.foregroundColor = insertForeground
+            }
         }
         attributed.append(piece)
     }

@@ -27,23 +27,35 @@ struct AskEdithIntent: AppIntent {
         let preview = String(selection.prefix(200))
         Logger.edith.info("AskEdithIntent selection: \(preview, privacy: .private)")
 
-        let coordinator = await MainActor.run {
-            OverlayCoordinator(initial: .processing(original: selection))
-        }
+        let promptName = Self.promptName(from: trimmedPath)
 
         let prepared: PreparedPrompt
         do {
             prepared = try Self.prepare(path: trimmedPath, selection: selection)
         } catch {
             let message = AskEdithRunner.format(error: error)
-            await MainActor.run {
-                coordinator.model.state = .error(original: selection, message: message)
+            let coordinator = await MainActor.run {
+                OverlayCoordinator(
+                    initial: .error(original: selection, message: message),
+                    promptName: promptName,
+                    modelLabel: nil
+                )
             }
             _ = await coordinator.present()
             return .result()
         }
 
-        let driveTask = Task { @MainActor in
+        let modelLabel = Self.modelLabel(provider: prepared.provider, model: prepared.model)
+
+        let coordinator = await MainActor.run {
+            OverlayCoordinator(
+                initial: .processing(original: selection),
+                promptName: promptName,
+                modelLabel: modelLabel
+            )
+        }
+
+        let drive: @MainActor () async -> Void = { @MainActor in
             let provider = Self.makeProvider(kind: prepared.provider)
             await AskEdithRunner.drive(
                 provider: provider,
@@ -55,9 +67,7 @@ struct AskEdithIntent: AppIntent {
             )
         }
 
-        let outcome = await coordinator.present()
-        driveTask.cancel()
-        _ = await driveTask.value
+        let outcome = await coordinator.present(drive: drive)
 
         switch outcome {
         case .confirmed(let text):
@@ -81,6 +91,24 @@ struct AskEdithIntent: AppIntent {
             effort: definition.effort,
             provider: definition.provider
         )
+    }
+
+    nonisolated static func promptName(from path: String) -> String? {
+        let basename = (path as NSString).lastPathComponent
+        let stem = (basename as NSString).deletingPathExtension
+        let trimmed = stem.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    nonisolated static func modelLabel(provider: ProviderKind, model: String?) -> String {
+        let resolved = model?.isEmpty == false ? model! : "default"
+        let providerLabel: String = {
+            switch provider {
+            case .cli: return "claude · cli"
+            case .api: return "claude · api"
+            }
+        }()
+        return "\(providerLabel) · \(resolved)"
     }
 
     @MainActor
