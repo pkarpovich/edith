@@ -424,7 +424,7 @@ struct AskEdithRunnerFormatTests {
     @Test
     func formatMissingApiKey() {
         let message = AskEdithRunner.format(error: AIProviderError.missingApiKey)
-        #expect(message.contains("ANTHROPIC_API_KEY"))
+        #expect(message.contains("Settings"))
     }
 
     @Test

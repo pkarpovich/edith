@@ -12,6 +12,10 @@ struct EdithApp: App {
             Image(systemName: "sparkles")
         }
         .menuBarExtraStyle(.menu)
+
+        Settings {
+            SettingsView()
+        }
     }
 }
 
@@ -25,6 +29,11 @@ private struct MenuBarContent: View {
                 NSWorkspace.shared.open(url)
             }
         }
+        Divider()
+        SettingsLink {
+            Text("Settings…")
+        }
+        .keyboardShortcut(",")
         Divider()
         Button("Quit edith") {
             NSApp.terminate(nil)

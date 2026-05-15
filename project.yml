@@ -2,7 +2,7 @@ name: edith
 options:
   bundleIdPrefix: space.pkarpovich
   deploymentTarget:
-    macOS: "26.4"
+    macOS: "26.0"
   developmentLanguage: en
   createIntermediateGroups: true
   generateEmptyDirectories: true
@@ -29,37 +29,70 @@ targets:
   edith:
     type: application
     platform: macOS
-    deploymentTarget: "26.4"
+    deploymentTarget: "26.0"
     sources:
       - path: edith
+        excludes:
+          - "AppIcon.icon/**"
+      - path: edith/AppIcon.icon
+        type: folder
+        buildPhase: none
     dependencies:
       - package: Subprocess
         product: Subprocess
+    postBuildScripts:
+      - name: Compile AppIcon.icon with actool
+        script: |
+          set -euo pipefail
+          ICON_SRC="$SRCROOT/edith/AppIcon.icon"
+          OUT_DIR="$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Resources"
+          PARTIAL_PLIST="$DERIVED_FILE_DIR/AppIcon-partial.plist"
+          mkdir -p "$OUT_DIR" "$(dirname "$PARTIAL_PLIST")"
+          xcrun actool "$ICON_SRC" \
+            --compile "$OUT_DIR" \
+            --output-partial-info-plist "$PARTIAL_PLIST" \
+            --app-icon AppIcon \
+            --include-all-app-icons \
+            --enable-on-demand-resources NO \
+            --target-device mac \
+            --minimum-deployment-target "$MACOSX_DEPLOYMENT_TARGET" \
+            --platform macosx \
+            --output-format human-readable-text
+        basedOnDependencyAnalysis: false
+        inputFiles:
+          - $(SRCROOT)/edith/AppIcon.icon
+        outputFiles:
+          - $(TARGET_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Resources/Assets.car
+          - $(TARGET_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Resources/AppIcon.icns
     info:
       path: edith/Info.plist
       properties:
         LSUIElement: true
-        CFBundleDisplayName: edith
+        CFBundleName: Edith
+        CFBundleDisplayName: Edith
+        CFBundleIconName: AppIcon
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
-        NSHumanReadableCopyright: ""
-        NSAccessibilityUsageDescription: "edith reads the currently selected text from the active app to transform it in place."
+        LSApplicationCategoryType: public.app-category.productivity
+        NSHumanReadableCopyright: "Copyright © 2026 Pavel Karpovich. All rights reserved."
+        NSAccessibilityUsageDescription: "Edith reads the currently selected text from the active app to transform it in place."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: space.pkarpovich.edith
-        PRODUCT_NAME: edith
+        PRODUCT_NAME: Edith
+        PRODUCT_MODULE_NAME: edith
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: GGG699AY79
         ENABLE_HARDENED_RUNTIME: YES
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: edith/Info.plist
-        MACOSX_DEPLOYMENT_TARGET: "26.4"
+        MACOSX_DEPLOYMENT_TARGET: "26.0"
 
   edithTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "26.4"
+    deploymentTarget: "26.0"
     sources:
       - path: edithTests
     dependencies:
@@ -70,8 +103,10 @@ targets:
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: GGG699AY79
-        MACOSX_DEPLOYMENT_TARGET: "26.4"
+        MACOSX_DEPLOYMENT_TARGET: "26.0"
         GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Edith.app/Contents/MacOS/Edith"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:
   edith:

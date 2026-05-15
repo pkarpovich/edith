@@ -37,6 +37,46 @@ private struct FailingTransport: AnthropicTransport {
     }
 }
 
+private final class StubKeychainBackend: KeychainBackend, @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Data?
+
+    init(value: String? = nil) {
+        self.value = value.flatMap { $0.data(using: .utf8) }
+    }
+
+    func copyMatching(_ query: [String: Any]) -> (status: OSStatus, item: Data?) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let value {
+            return (errSecSuccess, value)
+        }
+        return (errSecItemNotFound, nil)
+    }
+
+    func add(_ attributes: [String: Any]) -> OSStatus {
+        lock.lock()
+        defer { lock.unlock() }
+        value = attributes[kSecValueData as String] as? Data
+        return errSecSuccess
+    }
+
+    func update(query: [String: Any], attributes: [String: Any]) -> OSStatus {
+        lock.lock()
+        defer { lock.unlock() }
+        guard value != nil else { return errSecItemNotFound }
+        value = attributes[kSecValueData as String] as? Data
+        return errSecSuccess
+    }
+
+    func delete(_ query: [String: Any]) -> OSStatus {
+        lock.lock()
+        defer { lock.unlock() }
+        value = nil
+        return errSecSuccess
+    }
+}
+
 private func sseEvent(_ name: String, data: String) -> String {
     return "event: \(name)\ndata: \(data)\n\n"
 }
@@ -289,5 +329,49 @@ struct AnthropicAPIProviderTests {
         let request = try AnthropicAPIProvider.buildRequest(apiKey: "k", prompt: "p", model: nil)
         let body = try JSONSerialization.jsonObject(with: try #require(request.httpBody)) as? [String: Any]
         #expect(body?["model"] as? String == AnthropicModels.defaultModel)
+    }
+
+    @Test
+    func defaultAPIKeyProviderReadsFromKeychainFirst() {
+        let backend = StubKeychainBackend(value: "from-keychain")
+        let store = KeychainStore(backend: backend)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { ["ANTHROPIC_API_KEY": "from-env"] }
+        )
+        #expect(provider() == "from-keychain")
+    }
+
+    @Test
+    func defaultAPIKeyProviderFallsBackToEnvironment() {
+        let backend = StubKeychainBackend(value: nil)
+        let store = KeychainStore(backend: backend)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { ["ANTHROPIC_API_KEY": "from-env"] }
+        )
+        #expect(provider() == "from-env")
+    }
+
+    @Test
+    func defaultAPIKeyProviderTreatsEmptyKeychainValueAsAbsent() {
+        let backend = StubKeychainBackend(value: "")
+        let store = KeychainStore(backend: backend)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { ["ANTHROPIC_API_KEY": "from-env"] }
+        )
+        #expect(provider() == "from-env")
+    }
+
+    @Test
+    func defaultAPIKeyProviderReturnsNilWhenNeitherSourcePresent() {
+        let backend = StubKeychainBackend(value: nil)
+        let store = KeychainStore(backend: backend)
+        let provider = AnthropicAPIProvider.defaultAPIKeyProvider(
+            keychain: store,
+            environment: { [:] }
+        )
+        #expect(provider() == nil)
     }
 }

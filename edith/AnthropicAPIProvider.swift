@@ -12,14 +12,24 @@ struct AnthropicAPIProvider: AIProvider {
     let transport: any AnthropicTransport
     let apiKeyProvider: @Sendable () -> String?
 
-    init(
+    nonisolated init(
         transport: any AnthropicTransport,
-        apiKeyProvider: @Sendable @escaping () -> String? = {
-            ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"]
-        }
+        apiKeyProvider: @Sendable @escaping () -> String? = AnthropicAPIProvider.defaultAPIKeyProvider()
     ) {
         self.transport = transport
         self.apiKeyProvider = apiKeyProvider
+    }
+
+    nonisolated static func defaultAPIKeyProvider(
+        keychain: KeychainStore = KeychainStore(),
+        environment: @Sendable @escaping () -> [String: String] = { ProcessInfo.processInfo.environment }
+    ) -> @Sendable () -> String? {
+        return {
+            if let key = keychain.read(), !key.isEmpty {
+                return key
+            }
+            return environment()["ANTHROPIC_API_KEY"]
+        }
     }
 
     func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
