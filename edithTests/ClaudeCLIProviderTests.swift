@@ -3,40 +3,17 @@ import Testing
 @testable import edith
 
 struct ClaudeCLIProviderArgumentsTests {
-    @Test
-    func defaultsWithNoModelOrEffort() {
-        let args = ClaudeCLIProvider.arguments(model: nil, effort: nil)
-        #expect(args == ["-p", "--output-format=text"])
-    }
-
-    @Test
-    func includesModelFlagWhenProvided() {
-        let args = ClaudeCLIProvider.arguments(model: "haiku", effort: nil)
-        #expect(args == ["-p", "--output-format=text", "--model", "haiku"])
-    }
-
-    @Test
-    func includesEffortFlagWhenProvided() {
-        let args = ClaudeCLIProvider.arguments(model: nil, effort: "low")
-        #expect(args == ["-p", "--output-format=text", "--effort", "low"])
-    }
-
-    @Test
-    func includesBothFlagsWhenProvided() {
-        let args = ClaudeCLIProvider.arguments(model: "sonnet", effort: "high")
-        #expect(args == ["-p", "--output-format=text", "--model", "sonnet", "--effort", "high"])
-    }
-
-    @Test
-    func emptyModelStringIsTreatedAsAbsent() {
-        let args = ClaudeCLIProvider.arguments(model: "", effort: nil)
-        #expect(args == ["-p", "--output-format=text"])
-    }
-
-    @Test
-    func emptyEffortStringIsTreatedAsAbsent() {
-        let args = ClaudeCLIProvider.arguments(model: nil, effort: "")
-        #expect(args == ["-p", "--output-format=text"])
+    @Test(arguments: [
+        (nil,      nil,    ["-p", "--output-format=text"]),
+        ("haiku",  nil,    ["-p", "--output-format=text", "--model", "haiku"]),
+        (nil,      "low",  ["-p", "--output-format=text", "--effort", "low"]),
+        ("sonnet", "high", ["-p", "--output-format=text", "--model", "sonnet", "--effort", "high"]),
+        ("",       nil,    ["-p", "--output-format=text"]),
+        (nil,      "",     ["-p", "--output-format=text"]),
+        ("",       "",     ["-p", "--output-format=text"]),
+    ] as [(String?, String?, [String])])
+    func argumentsAreBuiltCorrectly(model: String?, effort: String?, expected: [String]) {
+        #expect(ClaudeCLIProvider.arguments(model: model, effort: effort) == expected)
     }
 }
 

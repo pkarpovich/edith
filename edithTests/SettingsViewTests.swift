@@ -154,7 +154,7 @@ struct SettingsViewTests {
         model.keyInput = "sk-fails"
         model.save()
         if case .error(let message) = model.status {
-            #expect(message.contains("unexpectedStatus"))
+            #expect(message.lowercased().contains("keychain"))
         } else {
             Issue.record("expected error status, got \(model.status)")
         }
@@ -187,7 +187,7 @@ struct SettingsViewTests {
         let model = SettingsModel(store: KeychainStore(backend: backend))
         model.clear()
         if case .error(let message) = model.status {
-            #expect(message.contains("unexpectedStatus"))
+            #expect(message.lowercased().contains("keychain"))
         } else {
             Issue.record("expected error status, got \(model.status)")
         }

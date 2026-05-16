@@ -2,12 +2,16 @@ import SwiftUI
 import Testing
 @testable import edith
 
-private struct Segment: Equatable {
+nonisolated fileprivate struct Segment: Equatable, CustomStringConvertible {
     let text: String
     let highlighted: Bool
+
+    var description: String {
+        "\(highlighted ? "[+]" : "[ ]")\(text)"
+    }
 }
 
-private func segments(_ attributed: AttributedString) -> [Segment] {
+nonisolated fileprivate func segments(_ attributed: AttributedString) -> [Segment] {
     var out: [Segment] = []
     for run in attributed.runs {
         let text = String(attributed[run.range].characters)
@@ -17,106 +21,101 @@ private func segments(_ attributed: AttributedString) -> [Segment] {
     return out
 }
 
-@MainActor
-@Suite struct InlineDiffTests {
-    @Test func identicalStringsProduceNoHighlight() {
-        let result = attributedDiff(original: "hello world", result: "hello world", insertColor: .green)
-        #expect(segments(result) == [Segment(text: "hello world", highlighted: false)])
+nonisolated fileprivate struct DiffCase: Sendable, CustomTestStringConvertible {
+    let name: String
+    let original: String
+    let result: String
+    let expected: [Segment]
+
+    var testDescription: String { name }
+}
+
+@Suite nonisolated struct InlineDiffTests {
+    fileprivate nonisolated static let cases: [DiffCase] = [
+        DiffCase(name: "identical → no highlight",
+                 original: "hello world", result: "hello world",
+                 expected: [Segment(text: "hello world", highlighted: false)]),
+
+        DiffCase(name: "both empty → empty",
+                 original: "", result: "",
+                 expected: []),
+
+        DiffCase(name: "pure insertion from empty → all highlighted",
+                 original: "", result: "hello",
+                 expected: [Segment(text: "hello", highlighted: true)]),
+
+        DiffCase(name: "insertion in middle → only inserted run highlighted",
+                 original: "hello world", result: "hello big world",
+                 expected: [
+                    Segment(text: "hello ", highlighted: false),
+                    Segment(text: "big ", highlighted: true),
+                    Segment(text: "world", highlighted: false),
+                 ]),
+
+        DiffCase(name: "pure deletion → unhighlighted result",
+                 original: "hello big world", result: "hello world",
+                 expected: [Segment(text: "hello world", highlighted: false)]),
+
+        DiffCase(name: "replacement → only inserted char highlighted",
+                 original: "cat", result: "bat",
+                 expected: [
+                    Segment(text: "b", highlighted: true),
+                    Segment(text: "at", highlighted: false),
+                 ]),
+
+        DiffCase(name: "adjacent insertions merge into single run",
+                 original: "ac", result: "abbc",
+                 expected: [
+                    Segment(text: "a", highlighted: false),
+                    Segment(text: "bb", highlighted: true),
+                    Segment(text: "c", highlighted: false),
+                 ]),
+
+        DiffCase(name: "cyrillic capitalisation → grapheme highlighted",
+                 original: "привет", result: "Привет",
+                 expected: [
+                    Segment(text: "П", highlighted: true),
+                    Segment(text: "ривет", highlighted: false),
+                 ]),
+
+        DiffCase(name: "emoji insertion is grapheme-aware",
+                 original: "hi", result: "hi👋",
+                 expected: [
+                    Segment(text: "hi", highlighted: false),
+                    Segment(text: "👋", highlighted: true),
+                 ]),
+
+        DiffCase(name: "russian sentence with punctuation insertions",
+                 original: "привет как дела", result: "Привет, как дела?",
+                 expected: [
+                    Segment(text: "П", highlighted: true),
+                    Segment(text: "ривет", highlighted: false),
+                    Segment(text: ",", highlighted: true),
+                    Segment(text: " как дела", highlighted: false),
+                    Segment(text: "?", highlighted: true),
+                 ]),
+    ]
+
+    @Test(arguments: cases)
+    fileprivate func diffProducesExpectedSegments(_ kase: DiffCase) {
+        let attributed = attributedDiff(original: kase.original, result: kase.result, insertColor: .green)
+        #expect(segments(attributed) == kase.expected)
     }
 
-    @Test func emptyStringsProduceEmpty() {
-        let result = attributedDiff(original: "", result: "", insertColor: .green)
-        #expect(segments(result) == [])
-    }
-
-    @Test func pureInsertionFromEmptyIsFullyHighlighted() {
-        let result = attributedDiff(original: "", result: "hello", insertColor: .green)
-        #expect(segments(result) == [Segment(text: "hello", highlighted: true)])
-    }
-
-    @Test func insertionInMiddleHighlightsOnlyInsertedRun() {
-        let result = attributedDiff(original: "hello world", result: "hello big world", insertColor: .green)
-        #expect(segments(result) == [
-            Segment(text: "hello ", highlighted: false),
-            Segment(text: "big ", highlighted: true),
-            Segment(text: "world", highlighted: false),
-        ])
-    }
-
-    @Test func pureDeletionProducesUnhighlightedResult() {
-        let result = attributedDiff(original: "hello big world", result: "hello world", insertColor: .green)
-        #expect(segments(result) == [Segment(text: "hello world", highlighted: false)])
-    }
-
-    @Test func replacementHighlightsOnlyInsertedCharacters() {
-        let result = attributedDiff(original: "cat", result: "bat", insertColor: .green)
-        #expect(segments(result) == [
-            Segment(text: "b", highlighted: true),
-            Segment(text: "at", highlighted: false),
-        ])
-    }
-
-    @Test func adjacentInsertionsMergeIntoSingleRun() {
-        let result = attributedDiff(original: "ac", result: "abbc", insertColor: .green)
-        #expect(segments(result) == [
-            Segment(text: "a", highlighted: false),
-            Segment(text: "bb", highlighted: true),
-            Segment(text: "c", highlighted: false),
-        ])
-    }
-
-    @Test func cyrillicCapitalisationHighlightsInsertedGrapheme() {
-        let result = attributedDiff(original: "привет", result: "Привет", insertColor: .green)
-        #expect(segments(result) == [
-            Segment(text: "П", highlighted: true),
-            Segment(text: "ривет", highlighted: false),
-        ])
-    }
-
-    @Test func emojiInsertionIsGraphemeAware() {
-        let result = attributedDiff(original: "hi", result: "hi👋", insertColor: .green)
-        #expect(segments(result) == [
-            Segment(text: "hi", highlighted: false),
-            Segment(text: "👋", highlighted: true),
-        ])
-    }
-
-    @Test func punctuationInsertionInRussianSentence() {
-        let result = attributedDiff(
-            original: "привет как дела",
-            result: "Привет, как дела?",
-            insertColor: .green
-        )
-        let segs = segments(result)
-        #expect(segs.contains(Segment(text: "П", highlighted: true)))
-        #expect(segs.contains(Segment(text: ",", highlighted: true)))
-        #expect(segs.contains(Segment(text: "?", highlighted: true)))
-        let highlighted = segs.filter { $0.highlighted }.map(\.text).joined()
-        #expect(!highlighted.contains("ривет"))
-        let reconstructed = segs.map(\.text).joined()
-        #expect(reconstructed == "Привет, как дела?")
-    }
-
-    @Test func insertColorParameterIsAppliedToHighlightedRuns() {
+    @Test
+    func insertColorParameterIsAppliedToHighlightedRuns() {
         let result = attributedDiff(original: "ac", result: "abc", insertColor: .red)
-        let highlightedColors = result.runs.compactMap { run -> Color? in
-            run.backgroundColor
-        }
+        let highlightedColors = result.runs.compactMap(\.backgroundColor)
         #expect(highlightedColors == [.red])
     }
 
-    @Test func russianSentenceSnapshotMatchesExpectedRuns() {
+    @Test
+    func insertForegroundParameterIsAppliedToHighlightedRuns() {
         let result = attributedDiff(
-            original: "привет как дела",
-            result: "Привет, как дела?",
-            insertColor: .green
+            original: "ac", result: "abc",
+            insertColor: .green, insertForeground: .yellow
         )
-        #expect(segments(result) == [
-            Segment(text: "П", highlighted: true),
-            Segment(text: "ривет", highlighted: false),
-            Segment(text: ",", highlighted: true),
-            Segment(text: " как дела", highlighted: false),
-            Segment(text: "?", highlighted: true),
-        ])
+        let highlightedFgs = result.runs.compactMap(\.foregroundColor)
+        #expect(highlightedFgs == [.yellow])
     }
 }

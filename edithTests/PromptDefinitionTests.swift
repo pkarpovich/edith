@@ -226,82 +226,32 @@ struct PromptDefinitionCommentTests {
 }
 
 struct PromptDefinitionProviderTests {
-    @Test
-    func defaultsToCliWhenFrontmatterAbsent() {
-        let def = PromptDefinition.parse(contents: "Hello {{selection}}")
-        #expect(def.provider == .cli)
-    }
-
-    @Test
-    func defaultsToCliWhenFrontmatterPresentWithoutProvider() {
-        let contents = """
-        ---
-        model: haiku
-        ---
-        body
-        """
+    @Test(arguments: [
+        ("no frontmatter at all",
+         "Hello {{selection}}",
+         ProviderKind.cli),
+        ("frontmatter without provider key",
+         "---\nmodel: haiku\n---\nbody",
+         .cli),
+        ("explicit provider: cli",
+         "---\nprovider: cli\n---\nbody",
+         .cli),
+        ("explicit provider: api",
+         "---\nprovider: api\n---\nbody",
+         .api),
+        ("unknown provider value falls back to cli",
+         "---\nprovider: bogus\n---\nbody",
+         .cli),
+        ("provider value is case-insensitive",
+         "---\nprovider: API\n---\nbody",
+         .api),
+        ("empty provider value falls back to cli",
+         "---\nprovider:\n---\nbody",
+         .cli),
+    ] as [(String, String, ProviderKind)])
+    func providerIsParsedCorrectly(_ name: String, contents: String, expected: ProviderKind) {
         let def = PromptDefinition.parse(contents: contents)
-        #expect(def.provider == .cli)
-    }
-
-    @Test
-    func parsesCliExplicitly() {
-        let contents = """
-        ---
-        provider: cli
-        ---
-        body
-        """
-        let def = PromptDefinition.parse(contents: contents)
-        #expect(def.provider == .cli)
-    }
-
-    @Test
-    func parsesApi() {
-        let contents = """
-        ---
-        provider: api
-        ---
-        body
-        """
-        let def = PromptDefinition.parse(contents: contents)
-        #expect(def.provider == .api)
-    }
-
-    @Test
-    func unknownProviderFallsBackToCli() {
-        let contents = """
-        ---
-        provider: bogus
-        ---
-        body
-        """
-        let def = PromptDefinition.parse(contents: contents)
-        #expect(def.provider == .cli)
-    }
-
-    @Test
-    func providerValueIsCaseInsensitive() {
-        let contents = """
-        ---
-        provider: API
-        ---
-        body
-        """
-        let def = PromptDefinition.parse(contents: contents)
-        #expect(def.provider == .api)
-    }
-
-    @Test
-    func emptyProviderValueFallsBackToCli() {
-        let contents = """
-        ---
-        provider:
-        ---
-        body
-        """
-        let def = PromptDefinition.parse(contents: contents)
-        #expect(def.provider == .cli)
+        #expect(def.provider == expected, "case '\(name)' parsed wrong provider")
     }
 }
 

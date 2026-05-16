@@ -357,119 +357,56 @@ struct AskEdithRunnerDriveTests {
     }
 }
 
-struct AskEdithRunnerFormatTests {
-    @Test
-    func formatNotFound() {
-        let message = AskEdithRunner.format(error: AIProviderError.notFound)
-        #expect(message.contains("Claude CLI not found"))
-        #expect(message.contains("PATH"))
+struct AskEdithErrorMessageTests {
+    @Test(arguments: [
+        (AIProviderError.notFound,                                                      ["Claude CLI not found", "PATH"]),
+        (.nonZeroExit(code: 42, stderr: "kaboom"),                                      ["42", "kaboom"]),
+        (.terminatedBySignal(signal: 15, stderr: "killed"),                             ["signal 15", "killed"]),
+        (.emptyOutput,                                                                  ["no output"]),
+        (.missingApiKey,                                                                ["Settings"]),
+        (.apiError(status: 429, type: "rate_limit_error", message: "too many requests"), ["429", "rate_limit_error", "too many requests"]),
+        (.truncatedStream,                                                              ["stream ended"]),
+    ] as [(AIProviderError, [String])])
+    func aiProviderErrorContainsExpectedFragments(error: AIProviderError, fragments: [String]) {
+        let message = error.localizedDescription
+        for fragment in fragments {
+            #expect(message.contains(fragment), "expected '\(fragment)' in '\(message)'")
+        }
+    }
+
+    @Test(arguments: [
+        (AIProviderError.nonZeroExit(code: 1, stderr: ""),         "Claude exited with code 1."),
+        (.terminatedBySignal(signal: 9, stderr: ""),               "Claude terminated by signal 9."),
+        (.cancelled,                                               "Cancelled."),
+    ] as [(AIProviderError, String)])
+    func aiProviderErrorExactMessage(error: AIProviderError, expected: String) {
+        #expect(error.localizedDescription == expected)
     }
 
     @Test
-    func formatNonZeroExitWithStderr() {
-        let message = AskEdithRunner.format(
-            error: AIProviderError.nonZeroExit(code: 42, stderr: "kaboom")
-        )
-        #expect(message.contains("42"))
-        #expect(message.contains("kaboom"))
-    }
-
-    @Test
-    func formatNonZeroExitWithEmptyStderr() {
-        let message = AskEdithRunner.format(
-            error: AIProviderError.nonZeroExit(code: 1, stderr: "")
-        )
-        #expect(message == "Claude exited with code 1.")
-    }
-
-    @Test
-    func formatTerminatedBySignal() {
-        let message = AskEdithRunner.format(
-            error: AIProviderError.terminatedBySignal(signal: 15, stderr: "killed")
-        )
-        #expect(message.contains("signal 15"))
-        #expect(message.contains("killed"))
-    }
-
-    @Test
-    func formatTerminatedBySignalEmptyStderr() {
-        let message = AskEdithRunner.format(
-            error: AIProviderError.terminatedBySignal(signal: 9, stderr: "")
-        )
-        #expect(message == "Claude terminated by signal 9.")
-    }
-
-    @Test
-    func formatTruncatesLongStderr() {
+    func nonZeroExitTruncatesLongStderr() {
         let long = String(repeating: "x", count: 1200)
-        let message = AskEdithRunner.format(
-            error: AIProviderError.nonZeroExit(code: 1, stderr: long)
-        )
+        let message = AIProviderError.nonZeroExit(code: 1, stderr: long).localizedDescription
         #expect(message.count < long.count)
         #expect(message.hasSuffix("…"))
     }
 
     @Test
-    func formatEmptyOutput() {
-        let message = AskEdithRunner.format(error: AIProviderError.emptyOutput)
-        #expect(message.contains("no output"))
-    }
-
-    @Test
-    func formatCancelled() {
-        let message = AskEdithRunner.format(error: AIProviderError.cancelled)
-        #expect(message == "Cancelled.")
-    }
-
-    @Test
-    func formatMissingApiKey() {
-        let message = AskEdithRunner.format(error: AIProviderError.missingApiKey)
-        #expect(message.contains("Settings"))
-    }
-
-    @Test
-    func formatApiErrorIncludesStatusTypeAndMessage() {
-        let message = AskEdithRunner.format(
-            error: AIProviderError.apiError(status: 429, type: "rate_limit_error", message: "too many requests")
-        )
-        #expect(message.contains("429"))
-        #expect(message.contains("rate_limit_error"))
-        #expect(message.contains("too many requests"))
-    }
-
-    @Test
-    func formatApiErrorTruncatesLongMessage() {
+    func apiErrorTruncatesLongMessage() {
         let long = String(repeating: "y", count: 1200)
-        let message = AskEdithRunner.format(
-            error: AIProviderError.apiError(status: 500, type: "server", message: long)
-        )
+        let message = AIProviderError.apiError(status: 500, type: "server", message: long).localizedDescription
         #expect(message.count < long.count + 100)
         #expect(message.hasSuffix("…"))
     }
 
-    @Test
-    func formatPromptParserIoFailure() {
-        let message = AskEdithRunner.format(
-            error: PromptParserError.ioFailure(path: "/tmp/missing.txt", underlying: "no such file")
-        )
-        #expect(message.contains("/tmp/missing.txt"))
-        #expect(message.contains("no such file"))
-    }
-
-    @Test
-    func formatPromptParserUnknownVariable() {
-        let message = AskEdithRunner.format(
-            error: PromptParserError.unknownVariable(name: "nonsense")
-        )
-        #expect(message.contains("nonsense"))
-    }
-
-    @Test
-    func formatUnknownErrorFallsBackToLocalizedDescription() {
-        struct CustomError: LocalizedError {
-            var errorDescription: String? { "custom-message" }
+    @Test(arguments: [
+        (PromptParserError.ioFailure(path: "/tmp/missing.txt", underlying: "no such file"), ["/tmp/missing.txt", "no such file"]),
+        (.unknownVariable(name: "nonsense"),                                                ["nonsense"]),
+    ] as [(PromptParserError, [String])])
+    func promptParserErrorContainsExpectedFragments(error: PromptParserError, fragments: [String]) {
+        let message = error.localizedDescription
+        for fragment in fragments {
+            #expect(message.contains(fragment), "expected '\(fragment)' in '\(message)'")
         }
-        let message = AskEdithRunner.format(error: CustomError())
-        #expect(message == "custom-message")
     }
 }

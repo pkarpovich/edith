@@ -19,12 +19,13 @@ enum SettingsStatus: Equatable {
 }
 
 @MainActor
-final class SettingsModel: ObservableObject {
-    @Published var keyInput: String = ""
-    @Published var isRevealed: Bool = false
-    @Published private(set) var status: SettingsStatus = .unknown
+@Observable
+final class SettingsModel {
+    var keyInput: String = ""
+    var isRevealed: Bool = false
+    private(set) var status: SettingsStatus = .unknown
 
-    private let store: KeychainStore
+    @ObservationIgnored private let store: KeychainStore
 
     init(store: KeychainStore = KeychainStore()) {
         self.store = store
@@ -49,7 +50,7 @@ final class SettingsModel: ObservableObject {
             keyInput = ""
             status = .keySaved
         } catch {
-            status = .error(String(describing: error))
+            status = .error(error.localizedDescription)
         }
     }
 
@@ -59,19 +60,20 @@ final class SettingsModel: ObservableObject {
             keyInput = ""
             status = .noKey
         } catch {
-            status = .error(String(describing: error))
+            status = .error(error.localizedDescription)
         }
     }
 }
 
 struct SettingsView: View {
-    @StateObject private var model: SettingsModel
+    @State private var model: SettingsModel
 
     init(model: SettingsModel = SettingsModel()) {
-        _model = StateObject(wrappedValue: model)
+        _model = State(initialValue: model)
     }
 
     var body: some View {
+        @Bindable var model = model
         Form {
             Section {
                 HStack {

@@ -33,7 +33,7 @@ struct AskEdithIntent: AppIntent {
         do {
             prepared = try Self.prepare(path: trimmedPath, selection: selection)
         } catch {
-            let message = AskEdithRunner.format(error: error)
+            let message = error.localizedDescription
             let coordinator = await MainActor.run {
                 OverlayCoordinator(
                     initial: .error(original: selection, message: message),
