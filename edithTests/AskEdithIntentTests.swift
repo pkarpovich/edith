@@ -14,35 +14,25 @@ struct AskEdithIntentTests {
         #expect(AskEdithIntent.supportedModes == .background)
     }
 
-    @Test
-    func promptNameExtractsBasenameStem() {
-        #expect(AskEdithIntent.promptName(from: "/Users/me/.config/edith/fix-ru.txt") == "fix-ru")
-        #expect(AskEdithIntent.promptName(from: "fix-en.md") == "fix-en")
-        #expect(AskEdithIntent.promptName(from: "/tmp/no-ext") == "no-ext")
+    @Test(arguments: [
+        ("/Users/me/.config/edith/fix-ru.txt", "fix-ru"),
+        ("fix-en.md", "fix-en"),
+        ("/tmp/no-ext", "no-ext"),
+        ("", nil),
+        ("/", nil),
+    ] as [(String, String?)])
+    func promptNameExtractsBasenameStem(input: String, expected: String?) {
+        #expect(AskEdithIntent.promptName(from: input) == expected)
     }
 
-    @Test
-    func promptNameReturnsNilForEmptyOrTrailingSlash() {
-        #expect(AskEdithIntent.promptName(from: "") == nil)
-        #expect(AskEdithIntent.promptName(from: "/") == nil)
-    }
-
-    @Test
-    func modelLabelComposesProviderAndModel() {
-        #expect(
-            AskEdithIntent.modelLabel(provider: .api, model: "claude-haiku-4-5-20251001")
-                == "claude · api · claude-haiku-4-5-20251001"
-        )
-        #expect(
-            AskEdithIntent.modelLabel(provider: .cli, model: "haiku")
-                == "claude · cli · haiku"
-        )
-    }
-
-    @Test
-    func modelLabelUsesDefaultWhenModelMissing() {
-        #expect(AskEdithIntent.modelLabel(provider: .api, model: nil) == "claude · api · default")
-        #expect(AskEdithIntent.modelLabel(provider: .cli, model: "") == "claude · cli · default")
+    @Test(arguments: [
+        (ProviderKind.api, "claude-haiku-4-5-20251001", "claude · api · claude-haiku-4-5-20251001"),
+        (ProviderKind.cli, "haiku", "claude · cli · haiku"),
+        (ProviderKind.api, nil, "claude · api · default"),
+        (ProviderKind.cli, "", "claude · cli · default"),
+    ] as [(ProviderKind, String?, String)])
+    func modelLabelComposes(provider: ProviderKind, model: String?, expected: String) {
+        #expect(AskEdithIntent.modelLabel(provider: provider, model: model) == expected)
     }
 }
 
