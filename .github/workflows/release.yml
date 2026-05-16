@@ -49,6 +49,7 @@ jobs:
           rm -f $RUNNER_TEMP/cert.p12
 
       - name: Resolve version and build number
+        id: version
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             VERSION=${GITHUB_REF#refs/tags/v}
@@ -58,6 +59,7 @@ jobs:
           BUILD_NUMBER=$(git rev-list --count HEAD)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Building $PRODUCT_NAME $VERSION (build $BUILD_NUMBER)"
 
       - name: Generate Xcode project
@@ -154,6 +156,12 @@ jobs:
           xcrun stapler staple "$DMG_PATH" || true
           echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
 
+      - name: Compute DMG SHA256
+        id: sha
+        run: |
+          DMG_SHA=$(shasum -a 256 "$DMG_PATH" | awk '{print $1}')
+          echo "dmg_sha=$DMG_SHA" >> $GITHUB_OUTPUT
+
       - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
@@ -175,3 +183,66 @@ jobs:
         run: |
           security delete-keychain $RUNNER_TEMP/signing.keychain-db || true
           rm -rf ~/private_keys
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      dmg_sha: ${{ steps.sha.outputs.dmg_sha }}
+
+  homebrew:
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: pkarpovich/homebrew-apps
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Write cask
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          DMG_SHA: ${{ needs.release.outputs.dmg_sha }}
+        run: |
+          mkdir -p homebrew-tap/Casks
+          cat > homebrew-tap/Casks/edith.rb << EOF
+          cask "edith" do
+            version "${VERSION}"
+            sha256 "${DMG_SHA}"
+
+            url "https://github.com/pkarpovich/edith/releases/download/v#{version}/Edith-#{version}.dmg"
+            name "Edith"
+            desc "Hotkey-driven text fixer powered by Claude"
+            homepage "https://github.com/pkarpovich/edith"
+
+            livecheck do
+              url :url
+              strategy :github_latest
+            end
+
+            depends_on macos: ">= :tahoe"
+
+            app "Edith.app"
+
+            zap trash: [
+              "~/Library/Containers/space.pkarpovich.edith",
+              "~/Library/Preferences/space.pkarpovich.edith.plist",
+              "~/Library/Application Support/space.pkarpovich.edith",
+            ]
+          end
+          EOF
+
+      - name: Commit and push cask
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/edith.rb
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update edith to ${{ needs.release.outputs.version }}"
+            git push
+          fi
