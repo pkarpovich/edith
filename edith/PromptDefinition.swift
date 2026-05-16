@@ -13,9 +13,18 @@ nonisolated struct PromptDefinition: Sendable, Equatable {
     let body: String
 }
 
-nonisolated enum PromptParserError: Error, Sendable, Equatable {
+nonisolated enum PromptParserError: Error, Sendable, Equatable, LocalizedError {
     case ioFailure(path: String, underlying: String)
     case unknownVariable(name: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .ioFailure(let path, let underlying):
+            return "Could not read prompt file at \(path): \(underlying)"
+        case .unknownVariable(let name):
+            return "Unknown variable in prompt file: \(name)"
+        }
+    }
 }
 
 extension PromptDefinition {

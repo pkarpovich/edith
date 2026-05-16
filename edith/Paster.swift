@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
 import os
@@ -38,9 +39,10 @@ enum Paster {
 
     private static func postCommandV() -> Bool {
         let source = CGEventSource(stateID: .combinedSessionState)
+        let vKey = CGKeyCode(kVK_ANSI_V)
         guard
-            let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 9, keyDown: true),
-            let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 9, keyDown: false)
+            let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true),
+            let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false)
         else {
             Logger.edith.error("Paster: failed to create CGEvent for Cmd+V")
             return false

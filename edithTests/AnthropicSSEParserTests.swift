@@ -37,47 +37,17 @@ struct AnthropicSSEParserTests {
         #expect(events == [.error(type: "overloaded_error", message: "Overloaded")])
     }
 
-    @Test
-    func pingEventProducesNoOutput() {
+    @Test(arguments: [
+        ("ping", #"{"type": "ping"}"#),
+        ("future_thing", #"{"foo": "bar"}"#),
+        ("message_start", #"{"type": "message_start", "message": {}}"#),
+        ("content_block_start", #"{"type": "content_block_start", "index": 0}"#),
+        ("content_block_stop", #"{"type": "content_block_stop", "index": 0}"#),
+        ("message_delta", #"{"type": "message_delta", "delta": {"stop_reason": "end_turn"}}"#),
+    ] as [(String, String)])
+    func skippedEventProducesNoOutput(name: String, payload: String) {
         var parser = AnthropicSSEParser()
-        let chunk = event("ping", data: #"{"type": "ping"}"#)
-        let events = parser.feed(chunk)
-        #expect(events.isEmpty)
-    }
-
-    @Test
-    func unknownEventNameProducesNoOutputAndDoesNotThrow() {
-        var parser = AnthropicSSEParser()
-        let chunk = event("future_thing", data: #"{"foo": "bar"}"#)
-        let events = parser.feed(chunk)
-        #expect(events.isEmpty)
-    }
-
-    @Test
-    func messageStartIsSilentlySkipped() {
-        var parser = AnthropicSSEParser()
-        let chunk = event("message_start", data: #"{"type": "message_start", "message": {}}"#)
-        let events = parser.feed(chunk)
-        #expect(events.isEmpty)
-    }
-
-    @Test
-    func contentBlockStartAndStopAreSkipped() {
-        var parser = AnthropicSSEParser()
-        let chunk = event("content_block_start", data: #"{"type": "content_block_start", "index": 0}"#)
-            + event("content_block_stop", data: #"{"type": "content_block_stop", "index": 0}"#)
-        let events = parser.feed(chunk)
-        #expect(events.isEmpty)
-    }
-
-    @Test
-    func messageDeltaIsSkipped() {
-        var parser = AnthropicSSEParser()
-        let chunk = event(
-            "message_delta",
-            data: #"{"type": "message_delta", "delta": {"stop_reason": "end_turn"}}"#
-        )
-        let events = parser.feed(chunk)
+        let events = parser.feed(event(name, data: payload))
         #expect(events.isEmpty)
     }
 

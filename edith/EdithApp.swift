@@ -35,7 +35,7 @@ private struct MenuBarContent: View {
         }
         .keyboardShortcut(",")
         Divider()
-        Button("Quit edith") {
+        Button("Quit Edith") {
             NSApp.terminate(nil)
         }
         .keyboardShortcut("q")
