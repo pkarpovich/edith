@@ -19,20 +19,21 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
     case notFound
     case nonZeroExit(code: Int32, stderr: String)
     case terminatedBySignal(signal: Int32, stderr: String)
-    case emptyOutput
+    case emptyOutput(stopReason: String?)
     case cancelled
     case missingApiKey
     case apiError(status: Int, type: String, message: String)
     case truncatedStream
     case maxTokens(rawOutput: String)
+    case contextWindowExceeded(rawOutput: String)
     case refusal(category: String?)
-    case malformedOutput(rawOutput: String)
+    case malformedOutput(rawOutput: String, stopReason: String?)
 
     private static let stderrPreviewLimit: Int = 500
 
     var rawOutput: String? {
         switch self {
-        case .maxTokens(let rawOutput), .malformedOutput(let rawOutput):
+        case .maxTokens(let rawOutput), .contextWindowExceeded(let rawOutput), .malformedOutput(let rawOutput, _):
             return rawOutput
         default:
             return nil
@@ -43,8 +44,12 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
         switch self {
         case .maxTokens:
             return "max_tokens"
+        case .contextWindowExceeded:
+            return "model_context_window_exceeded"
         case .refusal:
             return "refusal"
+        case .emptyOutput(let stopReason), .malformedOutput(_, let stopReason):
+            return stopReason
         default:
             return nil
         }
@@ -77,6 +82,8 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
             return "Anthropic API stream ended unexpectedly before completion."
         case .maxTokens:
             return "Claude stopped at the token limit before finishing."
+        case .contextWindowExceeded:
+            return "Claude ran out of context window before finishing."
         case .refusal(let category):
             guard let category, !category.isEmpty else {
                 return "Claude declined the request."

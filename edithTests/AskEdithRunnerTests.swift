@@ -446,7 +446,9 @@ struct AskEdithRunnerDriveTests {
 
     @Test(arguments: [
         (AIProviderError.maxTokens(rawOutput: #"{"text":"par"#), #"{"text":"par"#, "max_tokens"),
-        (AIProviderError.malformedOutput(rawOutput: "not json"), "not json", nil),
+        (AIProviderError.contextWindowExceeded(rawOutput: "cut"), "cut", "model_context_window_exceeded"),
+        (AIProviderError.malformedOutput(rawOutput: "not json", stopReason: "end_turn"), "not json", "end_turn"),
+        (AIProviderError.emptyOutput(stopReason: "end_turn"), nil, "end_turn"),
         (AIProviderError.refusal(category: "cyber"), nil, "refusal"),
     ] as [(AIProviderError, String?, String?)])
     func providerErrorFailedOutcomeCarriesRawOutputAndStopReason(
@@ -518,7 +520,7 @@ struct AskEdithErrorMessageTests {
         (AIProviderError.notFound,                                                      ["Claude CLI not found", "PATH"]),
         (.nonZeroExit(code: 42, stderr: "kaboom"),                                      ["42", "kaboom"]),
         (.terminatedBySignal(signal: 15, stderr: "killed"),                             ["signal 15", "killed"]),
-        (.emptyOutput,                                                                  ["no output"]),
+        (.emptyOutput(stopReason: nil),                                                 ["no output"]),
         (.missingApiKey,                                                                ["Settings"]),
         (.apiError(status: 429, type: "rate_limit_error", message: "too many requests"), ["429", "rate_limit_error", "too many requests"]),
         (.truncatedStream,                                                              ["stream ended"]),
@@ -537,7 +539,8 @@ struct AskEdithErrorMessageTests {
         (.maxTokens(rawOutput: "x"),                               "Claude stopped at the token limit before finishing."),
         (.refusal(category: "reasoning_extraction"),               "Claude declined the request (reasoning_extraction)."),
         (.refusal(category: nil),                                  "Claude declined the request."),
-        (.malformedOutput(rawOutput: "x"),                         "Claude returned a reply Edith could not parse."),
+        (.contextWindowExceeded(rawOutput: "x"),                   "Claude ran out of context window before finishing."),
+        (.malformedOutput(rawOutput: "x", stopReason: nil),        "Claude returned a reply Edith could not parse."),
     ] as [(AIProviderError, String)])
     func aiProviderErrorExactMessage(error: AIProviderError, expected: String) {
         #expect(error.localizedDescription == expected)

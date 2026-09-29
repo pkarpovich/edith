@@ -143,12 +143,15 @@ struct AnthropicAPIProvider: AIProvider {
         if stopReason == "max_tokens" {
             throw AIProviderError.maxTokens(rawOutput: output)
         }
+        if stopReason == "model_context_window_exceeded" {
+            throw AIProviderError.contextWindowExceeded(rawOutput: output)
+        }
         if output.isEmpty {
-            throw AIProviderError.emptyOutput
+            throw AIProviderError.emptyOutput(stopReason: stopReason)
         }
         guard let reply = try? JSONDecoder().decode(StructuredReply.self, from: Data(output.utf8)),
               !reply.text.isEmpty else {
-            throw AIProviderError.malformedOutput(rawOutput: output)
+            throw AIProviderError.malformedOutput(rawOutput: output, stopReason: stopReason)
         }
         return ProviderResponse(text: reply.text, rawOutput: output, stopReason: stopReason)
     }

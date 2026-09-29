@@ -137,6 +137,16 @@ struct AnthropicAPIProviderTests {
     }
 
     @Test
+    func contextWindowExceededFailsEvenWhenJSONParses() async {
+        let raw = #"{"text":"cut"}"#
+        let body = textDeltaEvent(raw) + messageDeltaEvent(stopReason: "model_context_window_exceeded") + messageStopEvent
+
+        await #expect(throws: AIProviderError.contextWindowExceeded(rawOutput: raw)) {
+            try await run(body: body)
+        }
+    }
+
+    @Test
     func refusalCarriesCategory() async {
         let details = #"{"type":"refusal","category":"reasoning_extraction","explanation":"no"}"#
         let body = messageDeltaEvent(stopReason: "refusal", stopDetails: details) + messageStopEvent
@@ -155,7 +165,7 @@ struct AnthropicAPIProviderTests {
     func unusableReplyFailsAsMalformed(raw: String) async {
         let body = textDeltaEvent(raw) + messageDeltaEvent(stopReason: "end_turn") + messageStopEvent
 
-        await #expect(throws: AIProviderError.malformedOutput(rawOutput: raw)) {
+        await #expect(throws: AIProviderError.malformedOutput(rawOutput: raw, stopReason: "end_turn")) {
             try await run(body: body)
         }
     }
@@ -163,7 +173,8 @@ struct AnthropicAPIProviderTests {
     @Test
     func malformedAndMaxTokensErrorsExposeRawOutput() {
         #expect(AIProviderError.maxTokens(rawOutput: "a").rawOutput == "a")
-        #expect(AIProviderError.malformedOutput(rawOutput: "b").rawOutput == "b")
+        #expect(AIProviderError.contextWindowExceeded(rawOutput: "c").rawOutput == "c")
+        #expect(AIProviderError.malformedOutput(rawOutput: "b", stopReason: "end_turn").rawOutput == "b")
         #expect(AIProviderError.refusal(category: "c").rawOutput == nil)
     }
 
@@ -299,7 +310,7 @@ struct AnthropicAPIProviderTests {
             _ = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
             Issue.record("expected emptyOutput error")
         } catch let error as AIProviderError {
-            #expect(error == .emptyOutput)
+            #expect(error == .emptyOutput(stopReason: nil))
         } catch {
             Issue.record("unexpected error: \(error)")
         }

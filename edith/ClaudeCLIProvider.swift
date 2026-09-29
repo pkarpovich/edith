@@ -45,7 +45,7 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
                 while let last = stdout.last, last == "\n" || last == "\r" {
                     stdout.removeLast()
                 }
-                if stdout.isEmpty { throw AIProviderError.emptyOutput }
+                if stdout.isEmpty { throw AIProviderError.emptyOutput(stopReason: nil) }
                 return stdout
             case .exited(let code):
                 let stderr = (result.standardError ?? "")
