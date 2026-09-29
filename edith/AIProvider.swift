@@ -1,7 +1,18 @@
 import Foundation
 
 protocol AIProvider: Sendable {
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error>
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error>
+}
+
+nonisolated struct ProviderResponse: Sendable, Equatable {
+    let text: String
+    let rawOutput: String
+    let stopReason: String?
+}
+
+nonisolated enum ProviderEvent: Sendable, Equatable {
+    case partial(String)
+    case finished(ProviderResponse)
 }
 
 enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
@@ -15,6 +26,10 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
     case truncatedStream
 
     private static let stderrPreviewLimit: Int = 500
+
+    var rawOutput: String? {
+        nil
+    }
 
     var errorDescription: String? {
         switch self {

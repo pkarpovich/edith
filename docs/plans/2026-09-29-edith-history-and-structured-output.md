@@ -175,13 +175,18 @@ Payload shape: `{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_
 - Modify: `edith/AskEdithIntent.swift` (call site only; no recording yet)
 - Modify: `edithTests/AskEdithRunnerTests.swift`, `edithTests/MockProviderTests.swift`, `edithTests/ClaudeCLIProviderTests.swift`
 
-- [ ] in `AIProvider.swift` add `enum ProviderEvent: Sendable, Equatable { case partial(String); case finished(ProviderResponse) }` and `struct ProviderResponse: Sendable, Equatable { let text: String; let rawOutput: String; let stopReason: String? }`; change `run(prompt:model:effort:)` to return `AsyncThrowingStream<ProviderEvent, Error>`
-- [ ] `ClaudeCLIProvider`: after the process succeeds, yield `.partial(output)` then `.finished(ProviderResponse(text: output, rawOutput: output, stopReason: nil))`; error paths unchanged
-- [ ] `MockProvider`: same shape (`.partial` of the uppercased prompt, then `.finished` with it)
-- [ ] `AskEdithRunner.drive`: `.partial` appends to the running text and sets `.streaming`; `.finished` sets `.ready(original:result: response.text)`; the stream ending without `.finished` is `AIProviderError.truncatedStream`; return `enum DriveOutcome: Sendable, Equatable { case finished(ProviderResponse, latencySeconds: Double); case failed(message: String, rawOutput: String?, latencySeconds: Double); case cancelled }` (`rawOutput` taken from `maxTokens` / `malformedOutput` errors, nil otherwise); cancellation behavior stays as today (no state change, returns `.cancelled`)
-- [ ] update the test doubles in `AskEdithRunnerTests.swift` to the event stream; keep every existing behavior test (streaming partials, error, cancellation, chunk-then-error, infinite stream cancellation)
-- [ ] add tests: `.finished` text wins over accumulated partials; stream without `.finished` -> error state + `.failed`; `DriveOutcome` carries the response and a non-negative latency
-- [ ] `make generate && make test` - must pass before Task 2
+- [x] in `AIProvider.swift` add `enum ProviderEvent: Sendable, Equatable { case partial(String); case finished(ProviderResponse) }` and `struct ProviderResponse: Sendable, Equatable { let text: String; let rawOutput: String; let stopReason: String? }`; change `run(prompt:model:effort:)` to return `AsyncThrowingStream<ProviderEvent, Error>`
+- [x] `ClaudeCLIProvider`: after the process succeeds, yield `.partial(output)` then `.finished(ProviderResponse(text: output, rawOutput: output, stopReason: nil))`; error paths unchanged
+- [x] `MockProvider`: same shape (`.partial` of the uppercased prompt, then `.finished` with it)
+- [x] `AskEdithRunner.drive`: `.partial` appends to the running text and sets `.streaming`; `.finished` sets `.ready(original:result: response.text)`; the stream ending without `.finished` is `AIProviderError.truncatedStream`; return `enum DriveOutcome: Sendable, Equatable { case finished(ProviderResponse, latencySeconds: Double); case failed(message: String, rawOutput: String?, latencySeconds: Double); case cancelled }` (`rawOutput` taken from `maxTokens` / `malformedOutput` errors, nil otherwise); cancellation behavior stays as today (no state change, returns `.cancelled`)
+- [x] update the test doubles in `AskEdithRunnerTests.swift` to the event stream; keep every existing behavior test (streaming partials, error, cancellation, chunk-then-error, infinite stream cancellation)
+- [x] add tests: `.finished` text wins over accumulated partials; stream without `.finished` -> error state + `.failed`; `DriveOutcome` carries the response and a non-negative latency
+- [x] `make generate && make test` - must pass before Task 2
+- [x] ➕ `AnthropicAPIProvider` moved to the event contract as a bridge (`.partial` per `text_delta`, `.finished` on `message_stop`, `stopReason` nil) so the project compiles; Task 3 replaces this with the schema/JSON flow
+- [x] ➕ `AIProviderError.rawOutput` added (returns nil for every case today); Task 3 must return the payload for `maxTokens` / `malformedOutput` so `DriveOutcome.failed` carries it
+- [x] ➕ `AskEdithRunner.drive` is `@discardableResult`, so `AskEdithIntent` needed no change yet; `ClaudeCLIProvider.events(for:)` extracted to test the CLI event shape without a subprocess
+- [x] ➕ Xcode 27 (27A266a) broke the test build before this change (`#ConformanceIsolation` on test `KeychainBackend` fakes, `#ActorIsolatedCall` in `InlineDiffTests`); fixed test-only: fakes marked `nonisolated`, three InlineDiff tests marked `@MainActor`
+- [x] ➕ note: `make generate` with the local xcodegen rewrites `edith.xcscheme` (version, `Edith.app` -> `edith.app`); that churn is reverted with `git checkout -- edith.xcodeproj` before committing unless a file was added/removed
 
 ### Task 2: SSE parser reads `message_delta`
 

@@ -2,14 +2,18 @@ import Foundation
 import Testing
 @testable import edith
 
+private func response(_ text: String) -> ProviderResponse {
+    ProviderResponse(text: text, rawOutput: text, stopReason: nil)
+}
+
 private struct ConstantProvider: AIProvider {
     let output: String
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let output = output
         return AsyncThrowingStream { continuation in
             do {
                 try Task.checkCancellation()
-                continuation.yield(output)
+                continuation.yield(.finished(response(output)))
                 continuation.finish()
             } catch {
                 continuation.finish(throwing: error)
@@ -20,7 +24,7 @@ private struct ConstantProvider: AIProvider {
 
 private struct ThrowingProvider: AIProvider {
     let error: any Error
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let error = error
         return AsyncThrowingStream { continuation in
             continuation.finish(throwing: error)
@@ -30,14 +34,14 @@ private struct ThrowingProvider: AIProvider {
 
 private struct DelayingProvider: AIProvider {
     let delay: Duration
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let delay = self.delay
         let prompt = prompt
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
                     try await Task.sleep(for: delay)
-                    continuation.yield(prompt)
+                    continuation.yield(.finished(response(prompt)))
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
@@ -52,14 +56,15 @@ private struct DelayingProvider: AIProvider {
 
 private struct ChunkedProvider: AIProvider {
     let chunks: [String]
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let chunks = chunks
         return AsyncThrowingStream { continuation in
             Task {
                 for chunk in chunks {
-                    continuation.yield(chunk)
+                    continuation.yield(.partial(chunk))
                     await Task.yield()
                 }
+                continuation.yield(.finished(response(chunks.joined())))
                 continuation.finish()
             }
         }
@@ -69,13 +74,13 @@ private struct ChunkedProvider: AIProvider {
 private struct ChunkThenErrorProvider: AIProvider {
     let chunks: [String]
     let error: any Error
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let chunks = chunks
         let error = error
         return AsyncThrowingStream { continuation in
             Task {
                 for chunk in chunks {
-                    continuation.yield(chunk)
+                    continuation.yield(.partial(chunk))
                     await Task.yield()
                 }
                 continuation.finish(throwing: error)
@@ -86,12 +91,12 @@ private struct ChunkThenErrorProvider: AIProvider {
 
 private struct InfiniteChunkProvider: AIProvider {
     let chunk: String
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let chunk = chunk
         return AsyncThrowingStream { continuation in
             let task = Task {
                 while !Task.isCancelled {
-                    continuation.yield(chunk)
+                    continuation.yield(.partial(chunk))
                     do {
                         try await Task.sleep(for: .milliseconds(5))
                     } catch {
@@ -104,6 +109,19 @@ private struct InfiniteChunkProvider: AIProvider {
             continuation.onTermination = { @Sendable _ in
                 task.cancel()
             }
+        }
+    }
+}
+
+private struct EventsProvider: AIProvider {
+    let events: [ProviderEvent]
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
+        let events = events
+        return AsyncThrowingStream { continuation in
+            for event in events {
+                continuation.yield(event)
+            }
+            continuation.finish()
         }
     }
 }
@@ -335,6 +353,113 @@ struct AskEdithRunnerDriveTests {
         default:
             Issue.record("Expected non-terminal state after cancellation, got \(state.state)")
         }
+    }
+
+    @Test
+    func finishedTextWinsOverAccumulatedPartials() async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let provider = EventsProvider(events: [
+            .partial("draft"),
+            .finished(ProviderResponse(text: "final", rawOutput: "{\"text\":\"final\"}", stopReason: "end_turn")),
+        ])
+        let outcome = await AskEdithRunner.drive(
+            provider: provider,
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        #expect(state.state == .ready(original: "hi", result: "final"))
+        guard case .finished(let finished, _) = outcome else {
+            Issue.record("Expected .finished outcome, got \(outcome)")
+            return
+        }
+        #expect(finished.text == "final")
+    }
+
+    @Test(arguments: [
+        [ProviderEvent](),
+        [.partial("half")],
+    ])
+    func streamWithoutFinishedFailsAsTruncated(events: [ProviderEvent]) async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let outcome = await AskEdithRunner.drive(
+            provider: EventsProvider(events: events),
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        let expectedMessage = AIProviderError.truncatedStream.localizedDescription
+        #expect(state.state == .error(original: "hi", message: expectedMessage))
+        guard case .failed(let message, let rawOutput, let latency) = outcome else {
+            Issue.record("Expected .failed outcome, got \(outcome)")
+            return
+        }
+        #expect(message == expectedMessage)
+        #expect(rawOutput == nil)
+        #expect(latency >= 0)
+    }
+
+    @Test
+    func driveOutcomeCarriesResponseAndLatency() async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let expected = ProviderResponse(text: "fixed", rawOutput: "raw", stopReason: "end_turn")
+        let outcome = await AskEdithRunner.drive(
+            provider: EventsProvider(events: [.finished(expected)]),
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        guard case .finished(let finished, let latency) = outcome else {
+            Issue.record("Expected .finished outcome, got \(outcome)")
+            return
+        }
+        #expect(finished == expected)
+        #expect(latency >= 0)
+    }
+
+    @Test
+    func providerErrorReturnsFailedOutcome() async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let outcome = await AskEdithRunner.drive(
+            provider: ThrowingProvider(error: AIProviderError.notFound),
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        guard case .failed(let message, let rawOutput, _) = outcome else {
+            Issue.record("Expected .failed outcome, got \(outcome)")
+            return
+        }
+        #expect(message == AIProviderError.notFound.localizedDescription)
+        #expect(rawOutput == nil)
+    }
+
+    @Test
+    func cancellationReturnsCancelledOutcome() async throws {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let provider = DelayingProvider(delay: .seconds(5))
+        let task = Task { @MainActor in
+            await AskEdithRunner.drive(
+                provider: provider,
+                original: "hi",
+                prompt: "p",
+                model: nil,
+                effort: nil,
+                state: state
+            )
+        }
+        try await Task.sleep(for: .milliseconds(20))
+        task.cancel()
+        let outcome = await task.value
+        #expect(outcome == .cancelled)
     }
 
     @Test

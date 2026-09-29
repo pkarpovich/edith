@@ -2,16 +2,21 @@ import Foundation
 import Testing
 @testable import edith
 
-private func collect(_ stream: AsyncThrowingStream<String, Error>) async throws -> [String] {
-    var chunks: [String] = []
-    for try await chunk in stream {
-        chunks.append(chunk)
+private func collect(_ stream: AsyncThrowingStream<ProviderEvent, Error>) async throws -> [ProviderEvent] {
+    var events: [ProviderEvent] = []
+    for try await event in stream {
+        events.append(event)
     }
-    return chunks
+    return events
 }
 
-private func collectJoined(_ stream: AsyncThrowingStream<String, Error>) async throws -> String {
-    try await collect(stream).joined()
+private func collectJoined(_ stream: AsyncThrowingStream<ProviderEvent, Error>) async throws -> String {
+    var text = ""
+    for event in try await collect(stream) {
+        guard case .finished(let response) = event else { continue }
+        text += response.text
+    }
+    return text
 }
 
 struct MockProviderTests {
@@ -39,11 +44,13 @@ struct MockProviderTests {
     }
 
     @Test
-    func yieldsExactlyOneChunk() async throws {
+    func yieldsPartialThenFinished() async throws {
         let provider = MockProvider()
-        let chunks = try await collect(provider.run(prompt: "hello", model: nil, effort: nil))
-        #expect(chunks.count == 1)
-        #expect(chunks.first == "HELLO")
+        let events = try await collect(provider.run(prompt: "hello", model: nil, effort: nil))
+        #expect(events == [
+            .partial("HELLO"),
+            .finished(ProviderResponse(text: "HELLO", rawOutput: "HELLO", stopReason: nil)),
+        ])
     }
 
     @Test

@@ -4,12 +4,14 @@ import Subprocess
 nonisolated struct ClaudeCLIProvider: AIProvider {
     private static let outputLimit: Int = 1 * 1024 * 1024
 
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
                     let output = try await Self.runOnce(prompt: prompt, model: model, effort: effort)
-                    continuation.yield(output)
+                    for event in Self.events(for: output) {
+                        continuation.yield(event)
+                    }
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
@@ -19,6 +21,10 @@ nonisolated struct ClaudeCLIProvider: AIProvider {
                 task.cancel()
             }
         }
+    }
+
+    static func events(for output: String) -> [ProviderEvent] {
+        [.partial(output), .finished(ProviderResponse(text: output, rawOutput: output, stopReason: nil))]
     }
 
     private static func runOnce(prompt: String, model: String?, effort: String?) async throws -> String {

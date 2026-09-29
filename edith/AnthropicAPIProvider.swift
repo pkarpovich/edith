@@ -32,7 +32,7 @@ struct AnthropicAPIProvider: AIProvider {
         }
     }
 
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let transport = self.transport
         let apiKeyProvider = self.apiKeyProvider
         return AsyncThrowingStream { continuation in
@@ -52,18 +52,19 @@ struct AnthropicAPIProvider: AIProvider {
                         throw AIProviderError.apiError(status: http.statusCode, type: errType, message: errMessage)
                     }
                     var parser = AnthropicSSEParser()
-                    var sawTextDelta = false
+                    var output = ""
                     for try await chunk in dataStream {
                         try Task.checkCancellation()
                         for event in parser.feed(chunk) {
                             switch event {
                             case .textDelta(let text):
-                                sawTextDelta = true
-                                continuation.yield(text)
+                                output += text
+                                continuation.yield(.partial(text))
                             case .messageStop:
-                                if !sawTextDelta {
+                                if output.isEmpty {
                                     throw AIProviderError.emptyOutput
                                 }
+                                continuation.yield(.finished(ProviderResponse(text: output, rawOutput: output, stopReason: nil)))
                                 continuation.finish()
                                 return
                             case .error(let type, let message):

@@ -37,7 +37,7 @@ private struct FailingTransport: AnthropicTransport {
     }
 }
 
-private final class StubKeychainBackend: KeychainBackend, @unchecked Sendable {
+nonisolated private final class StubKeychainBackend: KeychainBackend, @unchecked Sendable {
     private let lock = NSLock()
     private var value: Data?
 
@@ -87,9 +87,10 @@ private func textDeltaEvent(_ text: String) -> String {
     return sseEvent("content_block_delta", data: payload)
 }
 
-private func collect(_ stream: AsyncThrowingStream<String, Error>) async throws -> [String] {
+private func collect(_ stream: AsyncThrowingStream<ProviderEvent, Error>) async throws -> [String] {
     var out: [String] = []
-    for try await chunk in stream {
+    for try await event in stream {
+        guard case .partial(let chunk) = event else { continue }
         out.append(chunk)
     }
     return out
