@@ -24,11 +24,19 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
     case missingApiKey
     case apiError(status: Int, type: String, message: String)
     case truncatedStream
+    case maxTokens(rawOutput: String)
+    case refusal(category: String?)
+    case malformedOutput(rawOutput: String)
 
     private static let stderrPreviewLimit: Int = 500
 
     var rawOutput: String? {
-        nil
+        switch self {
+        case .maxTokens(let rawOutput), .malformedOutput(let rawOutput):
+            return rawOutput
+        default:
+            return nil
+        }
     }
 
     var errorDescription: String? {
@@ -56,6 +64,15 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
             return "Anthropic API error (\(status) \(type)): \(preview)"
         case .truncatedStream:
             return "Anthropic API stream ended unexpectedly before completion."
+        case .maxTokens:
+            return "Claude stopped at the token limit before finishing."
+        case .refusal(let category):
+            guard let category, !category.isEmpty else {
+                return "Claude declined the request."
+            }
+            return "Claude declined the request (\(category))."
+        case .malformedOutput:
+            return "Claude returned a reply Edith could not parse."
         }
     }
 

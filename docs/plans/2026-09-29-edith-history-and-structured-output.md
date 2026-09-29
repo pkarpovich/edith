@@ -207,11 +207,12 @@ Payload shape: `{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_
 - Modify: `edith/AIProvider.swift` (new error cases)
 - Modify: `edithTests/AnthropicAPIProviderTests.swift`
 
-- [ ] `buildRequest(apiKey:prompt:model:effort:)`: add `output_config` per Technical Details (`effort` only when non-empty); delete `warnEffortIgnoredOnce` and `effortWarningLogged`
-- [ ] streaming: accumulate `text_delta`s without yielding `.partial`; remember `stopReason` / `refusalCategory` from `.messageDelta`; on `.messageStop`: `refusal` -> throw `.refusal(category:)`; `max_tokens` -> throw `.maxTokens(rawOutput:)`; otherwise decode the accumulated string as `{"text": String}` (use `Decodable` + `JSONDecoder`, not `JSONSerialization`) and yield `.finished(ProviderResponse(text:rawOutput:stopReason:))`; decode failure or empty `text` -> `.malformedOutput(rawOutput:)`; no text at all -> existing `.emptyOutput`
-- [ ] add the three `AIProviderError` cases with `errorDescription` strings per Technical Details
-- [ ] tests via the fake transport: body contains `output_config.format` schema always and `effort` only when given (parameterized nil / "" / "medium"); happy path returns `text` and `rawOutput`; `max_tokens` with valid JSON still fails; refusal carries category; invalid JSON and JSON without `text` fail as malformed; existing HTTP-error and missing-key tests still pass
-- [ ] `make test` - must pass before Task 4
+- [x] `buildRequest(apiKey:prompt:model:effort:)`: add `output_config` per Technical Details (`effort` only when non-empty); delete `warnEffortIgnoredOnce` and `effortWarningLogged`
+- [x] streaming: accumulate `text_delta`s without yielding `.partial`; remember `stopReason` / `refusalCategory` from `.messageDelta`; on `.messageStop`: `refusal` -> throw `.refusal(category:)`; `max_tokens` -> throw `.maxTokens(rawOutput:)`; otherwise decode the accumulated string as `{"text": String}` (use `Decodable` + `JSONDecoder`, not `JSONSerialization`) and yield `.finished(ProviderResponse(text:rawOutput:stopReason:))`; decode failure or empty `text` -> `.malformedOutput(rawOutput:)`; no text at all -> existing `.emptyOutput`
+- [x] add the three `AIProviderError` cases with `errorDescription` strings per Technical Details
+- [x] tests via the fake transport: body contains `output_config.format` schema always and `effort` only when given (parameterized nil / "" / "medium"); happy path returns `text` and `rawOutput`; `max_tokens` with valid JSON still fails; refusal carries category; invalid JSON and JSON without `text` fail as malformed; existing HTTP-error and missing-key tests still pass
+- [x] `make test` - must pass before Task 4
+- [x] ➕ `AIProviderError.rawOutput` now returns the payload for `maxTokens` / `malformedOutput`; stop-reason handling extracted as `AnthropicAPIProvider.parseResponse(_:stopReason:refusalCategory:)`; `buildRequest` gained an `effort:` parameter; the new error descriptions are covered in the existing `aiProviderErrorExactMessage` test in `AskEdithRunnerTests`
 
 ### Task 4: `EditRun` model and `RunRecorder`
 

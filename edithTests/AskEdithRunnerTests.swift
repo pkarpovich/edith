@@ -503,6 +503,10 @@ struct AskEdithErrorMessageTests {
         (AIProviderError.nonZeroExit(code: 1, stderr: ""),         "Claude exited with code 1."),
         (.terminatedBySignal(signal: 9, stderr: ""),               "Claude terminated by signal 9."),
         (.cancelled,                                               "Cancelled."),
+        (.maxTokens(rawOutput: "x"),                               "Claude stopped at the token limit before finishing."),
+        (.refusal(category: "reasoning_extraction"),               "Claude declined the request (reasoning_extraction)."),
+        (.refusal(category: nil),                                  "Claude declined the request."),
+        (.malformedOutput(rawOutput: "x"),                         "Claude returned a reply Edith could not parse."),
     ] as [(AIProviderError, String)])
     func aiProviderErrorExactMessage(error: AIProviderError, expected: String) {
         #expect(error.localizedDescription == expected)
