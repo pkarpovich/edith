@@ -266,8 +266,8 @@ Payload shape: `{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_
 
 ### Task 8: [Final] Update documentation
 
-- [ ] no README/CLAUDE.md exists in this repo - nothing to update unless one was added meanwhile
-- [ ] move this plan to `docs/plans/completed/`
+- [x] no README/CLAUDE.md exists in this repo - nothing to update unless one was added meanwhile (verified: none added)
+- [x] move this plan to `docs/plans/completed/`
 
 ## Post-Completion
 
