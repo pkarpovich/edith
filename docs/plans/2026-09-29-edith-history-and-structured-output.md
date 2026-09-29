@@ -236,12 +236,14 @@ Payload shape: `{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_
 - Create: `edith/HistoryStore.swift`
 - Modify: `edithTests/AskEdithIntentTests.swift`
 
-- [ ] `HistoryStore.swift`: `enum HistoryStore` with `static func makeContainer(at url: URL) throws -> ModelContainer`, `static var defaultURL: URL` (Application Support + `space.pkarpovich.edith/history.store`, creating the directory), and `static func makeInMemoryContainer() throws -> ModelContainer`
-- [ ] `EdithApp.init`: build the container at `defaultURL`; on failure log with `Logger.edith.error` and fall back to the in-memory container (the app must still fix text); register it with `AppDependencyManager.shared.add(dependency: container)`; attach it to the `MenuBarExtra` scene with `.modelContainer(container)`
-- [ ] `OverlayCoordinator.Outcome`: add `.pasteFailed(String)`, returned by `resolve` when `Paster.paste` returns `false`
-- [ ] `AskEdithIntent`: `@Dependency private var container: ModelContainer`; create a `RunRecorder(context: container.mainContext)` on the main actor; prompt-file errors -> `recordFailure`; inside the `drive` closure: `start(...)` before `AskEdithRunner.drive`, then `finish(run, with: outcome)`, and keep the latest run in a MainActor-owned variable the closure updates; after `present` returns, map the coordinator outcome to `RunOutcome` and `resolve` the latest run (skip if it is already `failed`)
-- [ ] extract the outcome mapping as a `nonisolated static func runOutcome(for: OverlayCoordinator.Outcome) -> RunOutcome` and test it (parameterized); existing `AskEdithIntentTests` keep passing
-- [ ] `make generate && make build && make test` - must pass before Task 6
+- [x] `HistoryStore.swift`: `enum HistoryStore` with `static func makeContainer(at url: URL) throws -> ModelContainer`, `static var defaultURL: URL` (Application Support + `space.pkarpovich.edith/history.store`, creating the directory), and `static func makeInMemoryContainer() throws -> ModelContainer`
+- [x] `EdithApp.init`: build the container at `defaultURL`; on failure log with `Logger.edith.error` and fall back to the in-memory container (the app must still fix text); register it with `AppDependencyManager.shared.add(dependency: container)`; attach it to the `MenuBarExtra` scene with `.modelContainer(container)`
+- [x] `OverlayCoordinator.Outcome`: add `.pasteFailed(String)`, returned by `resolve` when `Paster.paste` returns `false`
+- [x] `AskEdithIntent`: `@Dependency private var container: ModelContainer`; create a `RunRecorder(context: container.mainContext)` on the main actor; prompt-file errors -> `recordFailure`; inside the `drive` closure: `start(...)` before `AskEdithRunner.drive`, then `finish(run, with: outcome)`, and keep the latest run in a MainActor-owned variable the closure updates; after `present` returns, map the coordinator outcome to `RunOutcome` and `resolve` the latest run (skip if it is already `failed`)
+- [x] extract the outcome mapping as a `nonisolated static func runOutcome(for: OverlayCoordinator.Outcome) -> RunOutcome` and test it (parameterized); existing `AskEdithIntentTests` keep passing
+- [x] `make generate && make build && make test` - must pass before Task 6
+- [x] ➕ the Application Support directory is created in `makeContainer(at:)` (parent of the given URL), so `defaultURL` stays a pure computed value and the creation path is testable with a temp URL; `edithTests/HistoryStoreTests.swift` added (default URL shape, on-disk container creates the directory and persists across containers, in-memory container starts empty)
+- [x] ➕ `perform()` is not MainActor-isolated, so the latest run lives in a private `@MainActor final class LatestRun` created via `MainActor.run`; the final `resolve` also runs inside `MainActor.run`. `EdithApp` falls back to `fatalError` only if even the in-memory container fails
 
 ### Task 6: Copy Last Result / Copy Last Original menu items
 

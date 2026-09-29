@@ -1,9 +1,20 @@
+import AppIntents
 import AppKit
+import os
+import SwiftData
 import SwiftUI
 
 @main
 struct EdithApp: App {
     @NSApplicationDelegateAdaptor(EdithAppDelegate.self) private var appDelegate
+
+    private let container: ModelContainer
+
+    init() {
+        let container = Self.makeHistoryContainer()
+        AppDependencyManager.shared.add(dependency: container)
+        self.container = container
+    }
 
     var body: some Scene {
         MenuBarExtra {
@@ -12,9 +23,23 @@ struct EdithApp: App {
             Image(systemName: "sparkles")
         }
         .menuBarExtraStyle(.menu)
+        .modelContainer(container)
 
         Settings {
             SettingsView()
+        }
+    }
+
+    private static func makeHistoryContainer() -> ModelContainer {
+        do {
+            return try HistoryStore.makeContainer(at: HistoryStore.defaultURL)
+        } catch {
+            Logger.edith.error("History store unavailable, using in-memory store: \(error.localizedDescription, privacy: .public)")
+        }
+        do {
+            return try HistoryStore.makeInMemoryContainer()
+        } catch {
+            fatalError("In-memory history store failed: \(error)")
         }
     }
 }

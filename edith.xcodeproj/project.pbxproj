@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03F335419AF263FA73183BBF /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9664FE2E03C4440284A32AAE /* HistoryStoreTests.swift */; };
 		0413F2D500FE661391C8C027 /* PasteboardSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B33818881AAE4DAF3989D60 /* PasteboardSnapshot.swift */; };
 		05EEFA36EC89C12F0270A043 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A02E0A5E38A2A6DBB988EF4B /* OverlayPanel.swift */; };
 		094C0BDFC77EE923A03B196D /* AnthropicTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A67819E2F182F738D95C9D3 /* AnthropicTransport.swift */; };
@@ -24,6 +25,7 @@
 		35C4D74ED20F716E2BB1EE6C /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0B94C234C1D82BC7AE3F9F /* KeychainStore.swift */; };
 		392B60FF1695F5B9D850071A /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D16F3DA8D8912DFFCC5D42 /* AIProvider.swift */; };
 		3FDCEBFBBB47269B85AB5649 /* InlineDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45BA3E067829D0574EE6A85C /* InlineDiff.swift */; };
+		427CE6DC948D75D17482703A /* HistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B569ABF526E7284E0096E340 /* HistoryStore.swift */; };
 		45207BB29CA7C8611A9FC9DC /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139C7A5B24C69D147C88DA2B /* SettingsView.swift */; };
 		473A1BA4F123826A32CD9289 /* PromptFileLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E66D620072513E135FBBCD9 /* PromptFileLoader.swift */; };
 		4844E0B2FB3230A8D9C35AD5 /* Paster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDFD9B59D0C9F42B3CBB053 /* Paster.swift */; };
@@ -95,12 +97,14 @@
 		8E3679606415061E92340CA8 /* RunRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecorderTests.swift; sourceTree = "<group>"; };
 		8F564BB7F6580F2ECD63F950 /* PromptDefinitionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptDefinitionTests.swift; sourceTree = "<group>"; };
 		93A4AAC72B151441FA8092C6 /* PermissionsCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsCheckTests.swift; sourceTree = "<group>"; };
+		9664FE2E03C4440284A32AAE /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
 		99BE0CBADEBEAF53E43FDF67 /* OverlayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayCoordinator.swift; sourceTree = "<group>"; };
 		9A3A61DB0C1583B1670A9436 /* AnthropicModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicModelsTests.swift; sourceTree = "<group>"; };
 		9B33818881AAE4DAF3989D60 /* PasteboardSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardSnapshot.swift; sourceTree = "<group>"; };
 		9C24D500520A25F2EDD09F72 /* MockProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProvider.swift; sourceTree = "<group>"; };
 		A02E0A5E38A2A6DBB988EF4B /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		A9C838111A98E9280370F29E /* ScreenResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenResolver.swift; sourceTree = "<group>"; };
+		B569ABF526E7284E0096E340 /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
 		B81E5C7E2A39AD725D77A013 /* ClaudeCLIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCLIProvider.swift; sourceTree = "<group>"; };
 		C2F9FA19328F77C9C8E50350 /* Logger+Edith.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logger+Edith.swift"; sourceTree = "<group>"; };
 		C30C5B8A27794C8B321C1568 /* PromptDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptDefinition.swift; sourceTree = "<group>"; };
@@ -158,6 +162,7 @@
 				573A2B1295778B262D7F7943 /* EdithApp.swift */,
 				097E4F30DAE32EEB5CF33B6D /* EdithShortcutsProvider.swift */,
 				ED769F0D3D3C610577C2DDC7 /* EditRun.swift */,
+				B569ABF526E7284E0096E340 /* HistoryStore.swift */,
 				D317F4BB16F73C404C0C973C /* Info.plist */,
 				45BA3E067829D0574EE6A85C /* InlineDiff.swift */,
 				8C0B94C234C1D82BC7AE3F9F /* KeychainStore.swift */,
@@ -190,6 +195,7 @@
 				87587310E83F2CF2EB4B06AD /* AskEdithIntentTests.swift */,
 				3F1582DFD667ADDA664E2C2F /* AskEdithRunnerTests.swift */,
 				6F8A267490CC85B72EB9C2E3 /* ClaudeCLIProviderTests.swift */,
+				9664FE2E03C4440284A32AAE /* HistoryStoreTests.swift */,
 				C96CE905E88AAE14F350332A /* InlineDiffTests.swift */,
 				0D3D64EB92DAFDA8F10F798F /* KeychainStoreTests.swift */,
 				6EAFDC88276688E94EF9CAC3 /* MockProviderTests.swift */,
@@ -339,6 +345,7 @@
 				934EDB8D29DCCF95CBC2B33F /* EditRun.swift in Sources */,
 				DC4E7D64BD5D5111A599562B /* EdithApp.swift in Sources */,
 				630B519FAFD5876F0791A7CD /* EdithShortcutsProvider.swift in Sources */,
+				427CE6DC948D75D17482703A /* HistoryStore.swift in Sources */,
 				3FDCEBFBBB47269B85AB5649 /* InlineDiff.swift in Sources */,
 				35C4D74ED20F716E2BB1EE6C /* KeychainStore.swift in Sources */,
 				AF027E74B9F22408ACA24B5B /* Logger+Edith.swift in Sources */,
@@ -370,6 +377,7 @@
 				ED43ECCA5D819F96949A1DA4 /* AskEdithIntentTests.swift in Sources */,
 				CA0B01330D3CA3D9AAE86268 /* AskEdithRunnerTests.swift in Sources */,
 				2655EBFDEC32CD5F709A796A /* ClaudeCLIProviderTests.swift in Sources */,
+				03F335419AF263FA73183BBF /* HistoryStoreTests.swift in Sources */,
 				10E9C2415DF33E34D9510EFB /* InlineDiffTests.swift in Sources */,
 				DE87BF86BD9A8FEC24B4FEDC /* KeychainStoreTests.swift in Sources */,
 				18B90B0856C12673AFC8C898 /* MockProviderTests.swift in Sources */,

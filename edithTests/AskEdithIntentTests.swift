@@ -34,6 +34,15 @@ struct AskEdithIntentTests {
     func modelLabelComposes(provider: ProviderKind, model: String?, expected: String) {
         #expect(AskEdithIntent.modelLabel(provider: provider, model: model) == expected)
     }
+
+    @Test(arguments: [
+        (OverlayCoordinator.Outcome.confirmed("fixed"), RunOutcome.confirmed),
+        (OverlayCoordinator.Outcome.pasteFailed("fixed"), RunOutcome.pasteFailed),
+        (OverlayCoordinator.Outcome.dismissed, RunOutcome.dismissed),
+    ])
+    func runOutcomeMapsCoordinatorOutcome(outcome: OverlayCoordinator.Outcome, expected: RunOutcome) {
+        #expect(AskEdithIntent.runOutcome(for: outcome) == expected)
+    }
 }
 
 struct AskEdithIntentPrepareProviderTests {
