@@ -392,7 +392,7 @@ struct AnthropicAPIProviderTests {
         let object = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
         let json = try #require(object)
         #expect(json["model"] as? String == "claude-sonnet-5-5")
-        #expect(json["max_tokens"] as? Int == AnthropicAPIProvider.defaultMaxTokens)
+        #expect(json["max_tokens"] as? Int == 64000)
         #expect(json["stream"] as? Bool == true)
         let messages = json["messages"] as? [[String: String]]
         #expect(messages == [["role": "user", "content": "hi"]])

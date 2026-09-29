@@ -3,7 +3,7 @@ import Foundation
 struct AnthropicAPIProvider: AIProvider {
     static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     static let anthropicVersion = "2023-06-01"
-    static let defaultMaxTokens = 4096
+    static let defaultMaxTokens = 64000
     static let errorBodyLimit = 4096
 
     static var outputFormat: [String: Any] {
