@@ -394,12 +394,13 @@ struct AskEdithRunnerDriveTests {
         )
         let expectedMessage = AIProviderError.truncatedStream.localizedDescription
         #expect(state.state == .error(original: "hi", message: expectedMessage))
-        guard case .failed(let message, let rawOutput, let latency) = outcome else {
+        guard case .failed(let message, let rawOutput, let stopReason, let latency) = outcome else {
             Issue.record("Expected .failed outcome, got \(outcome)")
             return
         }
         #expect(message == expectedMessage)
         #expect(rawOutput == nil)
+        #expect(stopReason == nil)
         #expect(latency >= 0)
     }
 
@@ -434,12 +435,41 @@ struct AskEdithRunnerDriveTests {
             effort: nil,
             state: state
         )
-        guard case .failed(let message, let rawOutput, _) = outcome else {
+        guard case .failed(let message, let rawOutput, let stopReason, _) = outcome else {
             Issue.record("Expected .failed outcome, got \(outcome)")
             return
         }
         #expect(message == AIProviderError.notFound.localizedDescription)
         #expect(rawOutput == nil)
+        #expect(stopReason == nil)
+    }
+
+    @Test(arguments: [
+        (AIProviderError.maxTokens(rawOutput: #"{"text":"par"#), #"{"text":"par"#, "max_tokens"),
+        (AIProviderError.malformedOutput(rawOutput: "not json"), "not json", nil),
+        (AIProviderError.refusal(category: "cyber"), nil, "refusal"),
+    ] as [(AIProviderError, String?, String?)])
+    func providerErrorFailedOutcomeCarriesRawOutputAndStopReason(
+        error: AIProviderError,
+        expectedRawOutput: String?,
+        expectedStopReason: String?
+    ) async {
+        let state = OverlayStateModel(initial: .processing(original: "hi"))
+        let outcome = await AskEdithRunner.drive(
+            provider: ThrowingProvider(error: error),
+            original: "hi",
+            prompt: "p",
+            model: nil,
+            effort: nil,
+            state: state
+        )
+        guard case .failed(let message, let rawOutput, let stopReason, _) = outcome else {
+            Issue.record("Expected .failed outcome, got \(outcome)")
+            return
+        }
+        #expect(message == error.localizedDescription)
+        #expect(rawOutput == expectedRawOutput)
+        #expect(stopReason == expectedStopReason)
     }
 
     @Test
@@ -460,6 +490,7 @@ struct AskEdithRunnerDriveTests {
         task.cancel()
         let outcome = await task.value
         #expect(outcome == .cancelled)
+        #expect(state.state == .processing(original: "hi"))
     }
 
     @Test

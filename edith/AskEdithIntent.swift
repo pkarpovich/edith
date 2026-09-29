@@ -99,7 +99,7 @@ struct AskEdithIntent: AppIntent {
             Logger.edith.info("AskEdithIntent dismissed")
         }
         await MainActor.run {
-            guard let run = latestRun.run, run.outcome != .failed else { return }
+            guard let run = latestRun.run else { return }
             recorder.resolve(run, as: Self.runOutcome(for: outcome))
         }
         return .result()

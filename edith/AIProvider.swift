@@ -39,6 +39,17 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
         }
     }
 
+    var stopReason: String? {
+        switch self {
+        case .maxTokens:
+            return "max_tokens"
+        case .refusal:
+            return "refusal"
+        default:
+            return nil
+        }
+    }
+
     var errorDescription: String? {
         switch self {
         case .notFound:

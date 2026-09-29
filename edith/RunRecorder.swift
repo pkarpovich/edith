@@ -39,8 +39,9 @@ final class RunRecorder {
             run.result = response.text
             run.stopReason = response.stopReason
             run.latencySeconds = latencySeconds
-        case .failed(let message, let rawOutput, let latencySeconds):
+        case .failed(let message, let rawOutput, let stopReason, let latencySeconds):
             run.rawOutput = rawOutput
+            run.stopReason = stopReason
             run.latencySeconds = latencySeconds
             run.errorMessage = message
             run.outcome = .failed
@@ -66,6 +67,7 @@ final class RunRecorder {
     }
 
     func resolve(_ run: EditRun, as outcome: RunOutcome) {
+        guard run.outcome != .failed else { return }
         run.outcome = outcome
         save()
     }

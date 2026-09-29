@@ -101,12 +101,13 @@ struct RunRecorderTests {
         let recorder = RunRecorder(context: container.mainContext)
 
         let run = startRun(recorder)
-        recorder.finish(run, with: .failed(message: "Claude stopped at the token limit before finishing.", rawOutput: "{\"text\":\"par", latencySeconds: 2))
+        recorder.finish(run, with: .failed(message: "Claude stopped at the token limit before finishing.", rawOutput: "{\"text\":\"par", stopReason: "max_tokens", latencySeconds: 2))
 
         let stored = try #require(try fetchAll(container).first)
         #expect(stored.outcome == .failed)
         #expect(stored.errorMessage == "Claude stopped at the token limit before finishing.")
         #expect(stored.rawOutput == "{\"text\":\"par")
+        #expect(stored.stopReason == "max_tokens")
         #expect(stored.result == nil)
         #expect(stored.latencySeconds == 2)
     }
@@ -143,15 +144,41 @@ struct RunRecorderTests {
         #expect(stored.errorMessage == "Could not read prompt file")
     }
 
+    @Test(arguments: [RunOutcome.confirmed, .dismissed, .pasteFailed])
+    func resolveKeepsFailedRunFailed(_ outcome: RunOutcome) throws {
+        let container = try makeContainer()
+        let recorder = RunRecorder(context: container.mainContext)
+
+        let run = startRun(recorder)
+        recorder.finish(run, with: .failed(message: "boom", rawOutput: nil, stopReason: nil, latencySeconds: 0.1))
+        recorder.resolve(run, as: outcome)
+
+        let stored = try #require(try fetchAll(container).first)
+        #expect(stored.outcome == .failed)
+    }
+
+    @Test func resolvePendingRunAsDismissed() throws {
+        let container = try makeContainer()
+        let recorder = RunRecorder(context: container.mainContext)
+
+        let run = startRun(recorder)
+        recorder.resolve(run, as: .dismissed)
+
+        let stored = try #require(try fetchAll(container).first)
+        #expect(stored.outcome == .dismissed)
+    }
+
     @Test func retryProducesTwoRows() throws {
         let container = try makeContainer()
         let recorder = RunRecorder(context: container.mainContext)
 
         let first = startRun(recorder)
-        recorder.finish(first, with: .failed(message: "boom", rawOutput: nil, latencySeconds: 0.1))
+        recorder.finish(first, with: .failed(message: "boom", rawOutput: nil, stopReason: nil, latencySeconds: 0.1))
         let second = startRun(recorder)
         recorder.finish(second, with: .finished(ProviderResponse(text: "ok", rawOutput: "ok", stopReason: "end_turn"), latencySeconds: 0.3))
         recorder.resolve(second, as: .dismissed)
+
+        recorder.resolve(first, as: .dismissed)
 
         let outcomes = try fetchAll(container).map(\.outcome)
         #expect(outcomes.count == 2)
@@ -205,5 +232,12 @@ struct RunRecorderTests {
         let stored = try #require(try fetchAll(container).first)
         #expect(stored.outcome == outcome)
         #expect(stored.outcomeRaw == outcome.rawValue)
+    }
+
+    @Test func unknownOutcomeRawFallsBackToPending() {
+        let run = EditRun(promptPath: "p", promptName: nil, provider: nil, model: nil, effort: nil, original: "orig")
+        run.outcomeRaw = "bogus"
+
+        #expect(run.outcome == .pending)
     }
 }

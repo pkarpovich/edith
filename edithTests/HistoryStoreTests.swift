@@ -31,6 +31,18 @@ struct HistoryStoreTests {
     }
 
     @Test
+    func makeContainerThrowsWhenParentIsAFile() throws {
+        let blocker = FileManager.default.temporaryDirectory
+            .appending(path: "edith-history-blocker-\(UUID().uuidString)", directoryHint: .notDirectory)
+        try Data().write(to: blocker)
+        defer { try? FileManager.default.removeItem(at: blocker) }
+
+        #expect(throws: (any Error).self) {
+            try HistoryStore.makeContainer(at: blocker.appending(path: "history.store"))
+        }
+    }
+
+    @Test
     func makeInMemoryContainerStartsEmpty() throws {
         let container = try HistoryStore.makeInMemoryContainer()
         let runs = try ModelContext(container).fetch(FetchDescriptor<EditRun>())

@@ -2,7 +2,7 @@ import Foundation
 
 nonisolated enum DriveOutcome: Sendable, Equatable {
     case finished(ProviderResponse, latencySeconds: Double)
-    case failed(message: String, rawOutput: String?, latencySeconds: Double)
+    case failed(message: String, rawOutput: String?, stopReason: String?, latencySeconds: Double)
     case cancelled
 }
 
@@ -40,10 +40,12 @@ nonisolated enum AskEdithRunner {
         } catch {
             if Task.isCancelled { return .cancelled }
             let message = error.localizedDescription
+            let providerError = error as? AIProviderError
             state.state = .error(original: original, message: message)
             return .failed(
                 message: message,
-                rawOutput: (error as? AIProviderError)?.rawOutput,
+                rawOutput: providerError?.rawOutput,
+                stopReason: providerError?.stopReason,
                 latencySeconds: (clock.now - start) / .seconds(1)
             )
         }
