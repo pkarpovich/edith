@@ -251,10 +251,11 @@ Payload shape: `{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_
 - Modify: `edith/EdithApp.swift`
 - Create: `edithTests/HistoryMenuTests.swift`
 
-- [ ] in `MenuBarContent`: `@Query(EditRun.latestRun)` and `@Query(EditRun.latestRunWithResult)`; after the Accessibility block add a `Divider` and two buttons "Copy Last Result" and "Copy Last Original", each `.disabled` when its query is empty; actions are methods (no inline closures) that write the text to `NSPasteboard.general` via `clearContents()` + `setString(_:forType: .string)`
-- [ ] extract the copy step as a small testable function taking an `NSPasteboard` (use a uniquely named `NSPasteboard(name:)` in tests, released after)
-- [ ] tests: copy writes exactly the run's `result` / `original`; with an in-memory container the two descriptors return the expected rows for a mix of confirmed, dismissed and failed runs
-- [ ] `make generate && make test` - must pass before Task 7
+- [x] in `MenuBarContent`: `@Query(EditRun.latestRun)` and `@Query(EditRun.latestRunWithResult)`; after the Accessibility block add a `Divider` and two buttons "Copy Last Result" and "Copy Last Original", each `.disabled` when its query is empty; actions are methods (no inline closures) that write the text to `NSPasteboard.general` via `clearContents()` + `setString(_:forType: .string)`
+- [x] extract the copy step as a small testable function taking an `NSPasteboard` (use a uniquely named `NSPasteboard(name:)` in tests, released after)
+- [x] tests: copy writes exactly the run's `result` / `original`; with an in-memory container the two descriptors return the expected rows for a mix of confirmed, dismissed and failed runs
+- [x] `make generate && make test` - must pass before Task 7
+- [x] ➕ the copy step is `HistoryMenu.copy(_:to:)` in `EdithApp.swift`; tests use `NSPasteboard.withUniqueName()` + `releaseGlobally()`; the descriptor mix test lives in `HistoryMenuTests` next to the existing ones in `RunRecorderTests`
 
 ### Task 7: Verify acceptance criteria
 

@@ -44,8 +44,17 @@ struct EdithApp: App {
     }
 }
 
+enum HistoryMenu {
+    static func copy(_ text: String, to pasteboard: NSPasteboard) {
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+    }
+}
+
 private struct MenuBarContent: View {
     @State private var isAccessibilityGranted: Bool = PermissionsCheck.isAccessibilityGranted
+    @Query(EditRun.latestRun) private var latestRuns: [EditRun]
+    @Query(EditRun.latestRunWithResult) private var latestRunsWithResult: [EditRun]
 
     var body: some View {
         Text(PermissionsCheck.accessibilityStatusLabel(isGranted: isAccessibilityGranted))
@@ -54,6 +63,11 @@ private struct MenuBarContent: View {
                 NSWorkspace.shared.open(url)
             }
         }
+        Divider()
+        Button("Copy Last Result", action: copyLastResult)
+            .disabled(latestRunsWithResult.isEmpty)
+        Button("Copy Last Original", action: copyLastOriginal)
+            .disabled(latestRuns.isEmpty)
         Divider()
         SettingsLink {
             Text("Settings…")
@@ -64,6 +78,16 @@ private struct MenuBarContent: View {
             NSApp.terminate(nil)
         }
         .keyboardShortcut("q")
+    }
+
+    private func copyLastResult() {
+        guard let result = latestRunsWithResult.first?.result else { return }
+        HistoryMenu.copy(result, to: .general)
+    }
+
+    private func copyLastOriginal() {
+        guard let original = latestRuns.first?.original else { return }
+        HistoryMenu.copy(original, to: .general)
     }
 }
 
