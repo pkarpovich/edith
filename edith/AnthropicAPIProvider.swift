@@ -60,6 +60,8 @@ struct AnthropicAPIProvider: AIProvider {
                             case .textDelta(let text):
                                 output += text
                                 continuation.yield(.partial(text))
+                            case .messageDelta:
+                                continue
                             case .messageStop:
                                 if output.isEmpty {
                                     throw AIProviderError.emptyOutput

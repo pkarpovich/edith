@@ -43,7 +43,6 @@ struct AnthropicSSEParserTests {
         ("message_start", #"{"type": "message_start", "message": {}}"#),
         ("content_block_start", #"{"type": "content_block_start", "index": 0}"#),
         ("content_block_stop", #"{"type": "content_block_stop", "index": 0}"#),
-        ("message_delta", #"{"type": "message_delta", "delta": {"stop_reason": "end_turn"}}"#),
     ] as [(String, String)])
     func skippedEventProducesNoOutput(name: String, payload: String) {
         var parser = AnthropicSSEParser()
@@ -201,5 +200,66 @@ struct AnthropicSSEParserTests {
         ).utf8))
         let events = parser.feed(Data(bytes))
         #expect(events == [.textDelta("a"), .textDelta("b")])
+    }
+
+    @Test(arguments: [
+        (
+            #"{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_details":null},"usage":{"output_tokens":12}}"#,
+            AnthropicSSEParser.Event.messageDelta(stopReason: "end_turn", refusalCategory: nil)
+        ),
+        (
+            #"{"type":"message_delta","delta":{"stop_reason":"max_tokens","stop_details":null},"usage":{"output_tokens":4096}}"#,
+            .messageDelta(stopReason: "max_tokens", refusalCategory: nil)
+        ),
+        (
+            #"{"type":"message_delta","delta":{"stop_reason":"refusal","stop_details":{"type":"refusal","category":"reasoning_extraction","explanation":"no"}},"usage":{}}"#,
+            .messageDelta(stopReason: "refusal", refusalCategory: "reasoning_extraction")
+        ),
+        (
+            #"{"type":"message_delta","delta":{"stop_reason":"refusal"},"usage":{}}"#,
+            .messageDelta(stopReason: "refusal", refusalCategory: nil)
+        ),
+        (
+            #"{"type":"message_delta","delta":{},"usage":{}}"#,
+            .messageDelta(stopReason: nil, refusalCategory: nil)
+        ),
+    ] as [(String, AnthropicSSEParser.Event)])
+    func messageDeltaYieldsStopReasonAndRefusalCategory(payload: String, expected: AnthropicSSEParser.Event) {
+        var parser = AnthropicSSEParser()
+        let events = parser.feed(event("message_delta", data: payload))
+        #expect(events == [expected])
+    }
+
+    @Test
+    func malformedMessageDeltaYieldsNothing() {
+        var parser = AnthropicSSEParser()
+        let events = parser.feed(event("message_delta", data: "{not valid json"))
+        #expect(events.isEmpty)
+    }
+
+    @Test(arguments: [
+        #"{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Let me think"}}"#,
+        #"{"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"abc123"}}"#,
+    ])
+    func thinkingAndSignatureDeltasYieldNothing(payload: String) {
+        var parser = AnthropicSSEParser()
+        let events = parser.feed(event("content_block_delta", data: payload))
+        #expect(events.isEmpty)
+    }
+
+    @Test
+    func messageDeltaSplitAcrossTwoFeedsYieldsOneEvent() {
+        var parser = AnthropicSSEParser()
+        let full = event(
+            "message_delta",
+            data: #"{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_details":null},"usage":{"output_tokens":3}}"#
+        )
+        let cut = full.index(full.startIndex, offsetBy: full.count / 2)
+
+        let firstEvents = parser.feed(String(full[..<cut]))
+        #expect(firstEvents.isEmpty)
+
+        let secondEvents = parser.feed(String(full[cut...]))
+        #expect(secondEvents == [.messageDelta(stopReason: "end_turn", refusalCategory: nil)])
     }
 }

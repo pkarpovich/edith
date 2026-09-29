@@ -4,6 +4,7 @@ import os
 nonisolated struct AnthropicSSEParser: Sendable {
     enum Event: Equatable, Sendable {
         case textDelta(String)
+        case messageDelta(stopReason: String?, refusalCategory: String?)
         case messageStop
         case error(type: String, message: String)
     }
@@ -77,6 +78,8 @@ nonisolated struct AnthropicSSEParser: Sendable {
         switch name {
         case "content_block_delta":
             return parseContentBlockDelta(payload)
+        case "message_delta":
+            return parseMessageDelta(payload)
         case "message_stop":
             return .messageStop
         case "error":
@@ -106,6 +109,16 @@ nonisolated struct AnthropicSSEParser: Sendable {
             return nil
         }
         return .textDelta(text)
+    }
+
+    private static func parseMessageDelta(_ payload: String) -> Event? {
+        guard let json = decodeJSON(payload) else { return nil }
+        guard let delta = json["delta"] as? [String: Any] else { return nil }
+        let stopReason = delta["stop_reason"] as? String
+        let stopDetails = delta["stop_details"] as? [String: Any]
+        let isRefusal = stopDetails?["type"] as? String == "refusal"
+        let refusalCategory = isRefusal ? stopDetails?["category"] as? String : nil
+        return .messageDelta(stopReason: stopReason, refusalCategory: refusalCategory)
     }
 
     private static func parseError(_ payload: String) -> Event? {

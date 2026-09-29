@@ -194,10 +194,11 @@ Payload shape: `{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_
 - Modify: `edith/AnthropicSSEParser.swift`
 - Modify: `edithTests/AnthropicSSEParserTests.swift`
 
-- [ ] add `Event.messageDelta(stopReason: String?, refusalCategory: String?)`; parse `event: message_delta` payloads per Technical Details; malformed JSON logs and yields nothing (same as other events)
-- [ ] keep ignoring `thinking_delta` / `signature_delta` and every other event name
-- [ ] tests (parameterized where inputs differ only): `end_turn`, `max_tokens`, `refusal` with category, `refusal` without `stop_details`, a `thinking_delta` chunk produces no event, `message_delta` split across two `feed` calls
-- [ ] `make test` - must pass before Task 3
+- [x] add `Event.messageDelta(stopReason: String?, refusalCategory: String?)`; parse `event: message_delta` payloads per Technical Details; malformed JSON logs and yields nothing (same as other events)
+- [x] keep ignoring `thinking_delta` / `signature_delta` and every other event name
+- [x] tests (parameterized where inputs differ only): `end_turn`, `max_tokens`, `refusal` with category, `refusal` without `stop_details`, a `thinking_delta` chunk produces no event, `message_delta` split across two `feed` calls
+- [x] `make test` - must pass before Task 3
+- [x] ➕ `AnthropicAPIProvider` switch gained `case .messageDelta: continue` so it compiles; Task 3 consumes the event. `refusalCategory` is read only when `stop_details.type == "refusal"`; the old `message_delta` entry was removed from the skipped-events test
 
 ### Task 3: API provider sends effort + schema and returns parsed JSON
 
