@@ -85,3 +85,14 @@ struct OverlayStateModelTests {
         #expect(model.state == .ready(original: "hi", result: "HI"))
     }
 }
+
+struct ReadyMetaLabelTests {
+    @Test(arguments: [
+        ("он еще новые тикеты закинул", "он еще новые тикеты закинул", "0 char · 0 edits"),
+        ("привет как дела", "привет, как дела", "1 char · 1 edit"),
+        ("ок.", "ок", "1 char · 1 edit"),
+    ])
+    func label(original: String, result: String, expected: String) {
+        #expect(readyMetaLabel(original: original, result: result) == expected)
+    }
+}
