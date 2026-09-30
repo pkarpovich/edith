@@ -1,13 +1,22 @@
 import Foundation
-import os
 
 struct AnthropicAPIProvider: AIProvider {
     static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     static let anthropicVersion = "2023-06-01"
-    static let defaultMaxTokens = 4096
+    static let defaultMaxTokens = 64000
     static let errorBodyLimit = 4096
 
-    private static let effortWarningLogged = OSAllocatedUnfairLock<Bool>(initialState: false)
+    static var outputFormat: [String: Any] {
+        [
+            "type": "json_schema",
+            "schema": [
+                "type": "object",
+                "properties": ["text": ["type": "string"]],
+                "required": ["text"],
+                "additionalProperties": false,
+            ],
+        ]
+    }
 
     let transport: any AnthropicTransport
     let apiKeyProvider: @Sendable () -> String?
@@ -32,19 +41,16 @@ struct AnthropicAPIProvider: AIProvider {
         }
     }
 
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let transport = self.transport
         let apiKeyProvider = self.apiKeyProvider
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    if let effort, !effort.isEmpty {
-                        Self.warnEffortIgnoredOnce()
-                    }
                     guard let apiKey = apiKeyProvider(), !apiKey.isEmpty else {
                         throw AIProviderError.missingApiKey
                     }
-                    let request = try Self.buildRequest(apiKey: apiKey, prompt: prompt, model: model)
+                    let request = try Self.buildRequest(apiKey: apiKey, prompt: prompt, model: model, effort: effort)
                     let (http, dataStream) = try await transport.openStream(request: request)
                     if !(200..<300).contains(http.statusCode) {
                         let bodyText = try await Self.drainBody(dataStream, limit: Self.errorBodyLimit)
@@ -52,18 +58,25 @@ struct AnthropicAPIProvider: AIProvider {
                         throw AIProviderError.apiError(status: http.statusCode, type: errType, message: errMessage)
                     }
                     var parser = AnthropicSSEParser()
-                    var sawTextDelta = false
+                    var output = ""
+                    var stopReason: String?
+                    var refusalCategory: String?
                     for try await chunk in dataStream {
                         try Task.checkCancellation()
                         for event in parser.feed(chunk) {
                             switch event {
                             case .textDelta(let text):
-                                sawTextDelta = true
-                                continuation.yield(text)
+                                output += text
+                            case .messageDelta(let reason, let category):
+                                stopReason = reason ?? stopReason
+                                refusalCategory = category ?? refusalCategory
                             case .messageStop:
-                                if !sawTextDelta {
-                                    throw AIProviderError.emptyOutput
-                                }
+                                let response = try Self.parseResponse(
+                                    output,
+                                    stopReason: stopReason,
+                                    refusalCategory: refusalCategory
+                                )
+                                continuation.yield(.finished(response))
                                 continuation.finish()
                                 return
                             case .error(let type, let message):
@@ -84,17 +97,22 @@ struct AnthropicAPIProvider: AIProvider {
         }
     }
 
-    static func buildRequest(apiKey: String, prompt: String, model: String?) throws -> URLRequest {
+    static func buildRequest(apiKey: String, prompt: String, model: String?, effort: String?) throws -> URLRequest {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.setValue("text/event-stream", forHTTPHeaderField: "accept")
+        var outputConfig: [String: Any] = ["format": outputFormat]
+        if let effort, !effort.isEmpty {
+            outputConfig["effort"] = effort
+        }
         let body: [String: Any] = [
             "model": AnthropicModels.resolve(model),
             "max_tokens": defaultMaxTokens,
             "stream": true,
+            "output_config": outputConfig,
             "messages": [
                 ["role": "user", "content": prompt],
             ],
@@ -118,15 +136,24 @@ struct AnthropicAPIProvider: AIProvider {
         return String(data: data, encoding: .utf8) ?? ""
     }
 
-    private static func warnEffortIgnoredOnce() {
-        let shouldLog = effortWarningLogged.withLock { logged in
-            guard !logged else { return false }
-            logged = true
-            return true
+    static func parseResponse(_ output: String, stopReason: String?, refusalCategory: String?) throws -> ProviderResponse {
+        if stopReason == "refusal" {
+            throw AIProviderError.refusal(category: refusalCategory)
         }
-        if shouldLog {
-            Logger.edith.warning("AnthropicAPIProvider: 'effort' is ignored for the API provider in this phase")
+        if stopReason == "max_tokens" {
+            throw AIProviderError.maxTokens(rawOutput: output)
         }
+        if stopReason == "model_context_window_exceeded" {
+            throw AIProviderError.contextWindowExceeded(rawOutput: output)
+        }
+        if output.isEmpty {
+            throw AIProviderError.emptyOutput(stopReason: stopReason)
+        }
+        guard let reply = try? JSONDecoder().decode(StructuredReply.self, from: Data(output.utf8)),
+              !reply.text.isEmpty else {
+            throw AIProviderError.malformedOutput(rawOutput: output, stopReason: stopReason)
+        }
+        return ProviderResponse(text: reply.text, rawOutput: output, stopReason: stopReason)
     }
 
     static func parseErrorBody(_ body: String, status: Int) -> (type: String, message: String) {
@@ -143,4 +170,8 @@ struct AnthropicAPIProvider: AIProvider {
         let fallbackMessage = trimmed.isEmpty ? "HTTP \(status)" : trimmed
         return (fallbackType, fallbackMessage)
     }
+}
+
+nonisolated private struct StructuredReply: Decodable {
+    let text: String
 }

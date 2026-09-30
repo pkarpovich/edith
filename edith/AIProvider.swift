@@ -1,20 +1,59 @@
 import Foundation
 
 protocol AIProvider: Sendable {
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error>
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error>
+}
+
+nonisolated struct ProviderResponse: Sendable, Equatable {
+    let text: String
+    let rawOutput: String
+    let stopReason: String?
+}
+
+nonisolated enum ProviderEvent: Sendable, Equatable {
+    case partial(String)
+    case finished(ProviderResponse)
 }
 
 enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
     case notFound
     case nonZeroExit(code: Int32, stderr: String)
     case terminatedBySignal(signal: Int32, stderr: String)
-    case emptyOutput
+    case emptyOutput(stopReason: String?)
     case cancelled
     case missingApiKey
     case apiError(status: Int, type: String, message: String)
     case truncatedStream
+    case maxTokens(rawOutput: String)
+    case contextWindowExceeded(rawOutput: String)
+    case refusal(category: String?)
+    case malformedOutput(rawOutput: String, stopReason: String?)
 
     private static let stderrPreviewLimit: Int = 500
+
+    var rawOutput: String? {
+        switch self {
+        case .maxTokens(let rawOutput), .contextWindowExceeded(let rawOutput), .malformedOutput(let rawOutput, _):
+            return rawOutput
+        default:
+            return nil
+        }
+    }
+
+    var stopReason: String? {
+        switch self {
+        case .maxTokens:
+            return "max_tokens"
+        case .contextWindowExceeded:
+            return "model_context_window_exceeded"
+        case .refusal:
+            return "refusal"
+        case .emptyOutput(let stopReason), .malformedOutput(_, let stopReason):
+            return stopReason
+        default:
+            return nil
+        }
+    }
 
     var errorDescription: String? {
         switch self {
@@ -41,6 +80,17 @@ enum AIProviderError: Error, Equatable, Sendable, LocalizedError {
             return "Anthropic API error (\(status) \(type)): \(preview)"
         case .truncatedStream:
             return "Anthropic API stream ended unexpectedly before completion."
+        case .maxTokens:
+            return "Claude stopped at the token limit before finishing."
+        case .contextWindowExceeded:
+            return "Claude ran out of context window before finishing."
+        case .refusal(let category):
+            guard let category, !category.isEmpty else {
+                return "Claude declined the request."
+            }
+            return "Claude declined the request (\(category))."
+        case .malformedOutput:
+            return "Claude returned a reply Edith could not parse."
         }
     }
 

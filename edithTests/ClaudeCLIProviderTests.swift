@@ -114,3 +114,13 @@ struct ClaudeCLIProviderEnvironmentOverridesTests {
         #expect(parts.contains("/bin"))
     }
 }
+
+struct ClaudeCLIProviderEventsTests {
+    @Test
+    func outputBecomesPartialThenFinishedWithoutStopReason() {
+        #expect(ClaudeCLIProvider.events(for: "fixed text") == [
+            .partial("fixed text"),
+            .finished(ProviderResponse(text: "fixed text", rawOutput: "fixed text", stopReason: nil)),
+        ])
+    }
+}

@@ -37,7 +37,7 @@ private struct FailingTransport: AnthropicTransport {
     }
 }
 
-private final class StubKeychainBackend: KeychainBackend, @unchecked Sendable {
+nonisolated private final class StubKeychainBackend: KeychainBackend, @unchecked Sendable {
     private let lock = NSLock()
     private var value: Data?
 
@@ -87,24 +87,97 @@ private func textDeltaEvent(_ text: String) -> String {
     return sseEvent("content_block_delta", data: payload)
 }
 
-private func collect(_ stream: AsyncThrowingStream<String, Error>) async throws -> [String] {
-    var out: [String] = []
-    for try await chunk in stream {
-        out.append(chunk)
+private func messageDeltaEvent(stopReason: String, stopDetails: String = "null") -> String {
+    let payload = #"{"type":"message_delta","delta":{"stop_reason":"\#(stopReason)","stop_details":\#(stopDetails)},"usage":{"output_tokens":5}}"#
+    return sseEvent("message_delta", data: payload)
+}
+
+private let messageStopEvent = sseEvent("message_stop", data: #"{"type":"message_stop"}"#)
+
+private func collect(_ stream: AsyncThrowingStream<ProviderEvent, Error>) async throws -> [ProviderEvent] {
+    var out: [ProviderEvent] = []
+    for try await event in stream {
+        out.append(event)
     }
     return out
 }
 
+private func run(body: String, effort: String? = nil) async throws -> [ProviderEvent] {
+    let transport = FakeTransport(chunks: [Data(body.utf8)])
+    let provider = AnthropicAPIProvider(transport: transport, apiKeyProvider: { "key" })
+    return try await collect(provider.run(prompt: "hi", model: nil, effort: effort))
+}
+
+private func requestBody(effort: String?) throws -> [String: Any] {
+    let request = try AnthropicAPIProvider.buildRequest(apiKey: "k", prompt: "p", model: nil, effort: effort)
+    let object = try JSONSerialization.jsonObject(with: try #require(request.httpBody)) as? [String: Any]
+    return try #require(object)
+}
+
 struct AnthropicAPIProviderTests {
     @Test
-    func happyPathYieldsTextDeltasInOrder() async throws {
-        let body = textDeltaEvent("foo") + textDeltaEvent("bar") + sseEvent("message_stop", data: #"{"type":"message_stop"}"#)
-        let transport = FakeTransport(chunks: [Data(body.utf8)])
-        let provider = AnthropicAPIProvider(transport: transport, apiKeyProvider: { "test-key" })
+    func happyPathDecodesTextFromAccumulatedJSON() async throws {
+        let body = textDeltaEvent(#"{"text":"fo"#) + textDeltaEvent(#"o bar"}"#)
+            + messageDeltaEvent(stopReason: "end_turn") + messageStopEvent
 
-        let chunks = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
-        #expect(chunks == ["foo", "bar"])
+        let events = try await run(body: body)
+
+        let expected = ProviderResponse(text: "foo bar", rawOutput: #"{"text":"foo bar"}"#, stopReason: "end_turn")
+        #expect(events == [.finished(expected)])
     }
+
+    @Test
+    func maxTokensFailsEvenWhenJSONParses() async {
+        let raw = #"{"text":"cut"}"#
+        let body = textDeltaEvent(raw) + messageDeltaEvent(stopReason: "max_tokens") + messageStopEvent
+
+        await #expect(throws: AIProviderError.maxTokens(rawOutput: raw)) {
+            try await run(body: body)
+        }
+    }
+
+    @Test
+    func contextWindowExceededFailsEvenWhenJSONParses() async {
+        let raw = #"{"text":"cut"}"#
+        let body = textDeltaEvent(raw) + messageDeltaEvent(stopReason: "model_context_window_exceeded") + messageStopEvent
+
+        await #expect(throws: AIProviderError.contextWindowExceeded(rawOutput: raw)) {
+            try await run(body: body)
+        }
+    }
+
+    @Test
+    func refusalCarriesCategory() async {
+        let details = #"{"type":"refusal","category":"reasoning_extraction","explanation":"no"}"#
+        let body = messageDeltaEvent(stopReason: "refusal", stopDetails: details) + messageStopEvent
+
+        await #expect(throws: AIProviderError.refusal(category: "reasoning_extraction")) {
+            try await run(body: body)
+        }
+    }
+
+    @Test(arguments: [
+        "not json",
+        #"{"answer":"x"}"#,
+        #"{"text":""}"#,
+        #"{"text":"unterminated"#,
+    ])
+    func unusableReplyFailsAsMalformed(raw: String) async {
+        let body = textDeltaEvent(raw) + messageDeltaEvent(stopReason: "end_turn") + messageStopEvent
+
+        await #expect(throws: AIProviderError.malformedOutput(rawOutput: raw, stopReason: "end_turn")) {
+            try await run(body: body)
+        }
+    }
+
+    @Test
+    func malformedAndMaxTokensErrorsExposeRawOutput() {
+        #expect(AIProviderError.maxTokens(rawOutput: "a").rawOutput == "a")
+        #expect(AIProviderError.contextWindowExceeded(rawOutput: "c").rawOutput == "c")
+        #expect(AIProviderError.malformedOutput(rawOutput: "b", stopReason: "end_turn").rawOutput == "b")
+        #expect(AIProviderError.refusal(category: "c").rawOutput == nil)
+    }
+
 
     @Test
     func missingApiKeyThrows() async {
@@ -237,7 +310,7 @@ struct AnthropicAPIProviderTests {
             _ = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
             Issue.record("expected emptyOutput error")
         } catch let error as AIProviderError {
-            #expect(error == .emptyOutput)
+            #expect(error == .emptyOutput(stopReason: nil))
         } catch {
             Issue.record("unexpected error: \(error)")
         }
@@ -259,8 +332,8 @@ struct AnthropicAPIProviderTests {
     }
 
     @Test
-    func chunksSplitMidEventStillProduceDeltas() async throws {
-        let full = textDeltaEvent("hello") + sseEvent("message_stop", data: #"{"type":"message_stop"}"#)
+    func chunksSplitMidEventStillProduceResponse() async throws {
+        let full = textDeltaEvent(#"{"text":"hello"}"#) + messageDeltaEvent(stopReason: "end_turn") + messageStopEvent
         let bytes = Array(full.utf8)
         let cut = bytes.count / 2
         let first = Data(bytes[0..<cut])
@@ -268,8 +341,9 @@ struct AnthropicAPIProviderTests {
         let transport = FakeTransport(chunks: [first, second])
         let provider = AnthropicAPIProvider(transport: transport, apiKeyProvider: { "key" })
 
-        let chunks = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
-        #expect(chunks == ["hello"])
+        let events = try await collect(provider.run(prompt: "hi", model: nil, effort: nil))
+        let expected = ProviderResponse(text: "hello", rawOutput: #"{"text":"hello"}"#, stopReason: "end_turn")
+        #expect(events == [.finished(expected)])
     }
 
     @Test
@@ -305,7 +379,7 @@ struct AnthropicAPIProviderTests {
 
     @Test
     func buildRequestSetsHeadersAndBody() throws {
-        let request = try AnthropicAPIProvider.buildRequest(apiKey: "secret", prompt: "hi", model: "claude-haiku-4-5-20251001")
+        let request = try AnthropicAPIProvider.buildRequest(apiKey: "secret", prompt: "hi", model: "claude-sonnet-5-5", effort: nil)
 
         #expect(request.url == AnthropicAPIProvider.endpoint)
         #expect(request.httpMethod == "POST")
@@ -317,8 +391,8 @@ struct AnthropicAPIProviderTests {
         let bodyData = try #require(request.httpBody)
         let object = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
         let json = try #require(object)
-        #expect(json["model"] as? String == "claude-haiku-4-5-20251001")
-        #expect(json["max_tokens"] as? Int == AnthropicAPIProvider.defaultMaxTokens)
+        #expect(json["model"] as? String == "claude-sonnet-5-5")
+        #expect(json["max_tokens"] as? Int == 64000)
         #expect(json["stream"] as? Bool == true)
         let messages = json["messages"] as? [[String: String]]
         #expect(messages == [["role": "user", "content": "hi"]])
@@ -326,9 +400,30 @@ struct AnthropicAPIProviderTests {
 
     @Test
     func buildRequestUsesDefaultModelWhenNil() throws {
-        let request = try AnthropicAPIProvider.buildRequest(apiKey: "k", prompt: "p", model: nil)
-        let body = try JSONSerialization.jsonObject(with: try #require(request.httpBody)) as? [String: Any]
-        #expect(body?["model"] as? String == AnthropicModels.defaultModel)
+        let body = try requestBody(effort: nil)
+        #expect(body["model"] as? String == AnthropicModels.defaultModel)
+    }
+
+    @Test(arguments: [
+        (nil, nil),
+        ("", nil),
+        ("medium", "medium"),
+    ] as [(String?, String?)])
+    func buildRequestAlwaysSendsSchemaAndEffortOnlyWhenSet(effort: String?, expectedEffort: String?) throws {
+        let body = try requestBody(effort: effort)
+        let outputConfig = try #require(body["output_config"] as? [String: Any])
+
+        #expect(outputConfig["effort"] as? String == expectedEffort)
+        #expect(outputConfig.keys.contains("effort") == (expectedEffort != nil))
+
+        let format = try #require(outputConfig["format"] as? [String: Any])
+        #expect(format["type"] as? String == "json_schema")
+        let schema = try #require(format["schema"] as? [String: Any])
+        #expect(schema["type"] as? String == "object")
+        #expect(schema["required"] as? [String] == ["text"])
+        #expect(schema["additionalProperties"] as? Bool == false)
+        let properties = try #require(schema["properties"] as? [String: [String: String]])
+        #expect(properties == ["text": ["type": "string"]])
     }
 
     @Test

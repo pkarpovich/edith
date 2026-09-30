@@ -3,7 +3,7 @@ import Security
 import Testing
 @testable import edith
 
-private final class FakeKeychainBackend: KeychainBackend, @unchecked Sendable {
+nonisolated private final class FakeKeychainBackend: KeychainBackend, @unchecked Sendable {
     struct Entry {
         let service: String
         let account: String

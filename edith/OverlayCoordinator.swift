@@ -7,6 +7,7 @@ import os
 final class OverlayCoordinator {
     enum Outcome: Sendable, Equatable {
         case confirmed(String)
+        case pasteFailed(String)
         case dismissed
     }
 
@@ -96,25 +97,20 @@ final class OverlayCoordinator {
         guard let continuation else { return }
         self.continuation = nil
         teardown()
-        var pasteFailed = false
-        if case .confirmed(let text) = outcome {
-            if !Paster.paste(text) {
-                pasteFailed = true
-                NSSound.beep()
-            }
+        var resolved = outcome
+        if case .confirmed(let text) = outcome, !Paster.paste(text) {
+            resolved = .pasteFailed(text)
+            NSSound.beep()
         }
-        let label: String = {
-            switch outcome {
-            case .confirmed: return pasteFailed ? "confirmed-paste-failed" : "confirmed"
-            case .dismissed: return "dismissed"
-            }
-        }()
-        if pasteFailed {
-            Logger.edith.error("OverlayCoordinator resolved: \(label, privacy: .public)")
-        } else {
-            Logger.edith.info("OverlayCoordinator resolved: \(label, privacy: .public)")
+        switch resolved {
+        case .confirmed:
+            Logger.edith.info("OverlayCoordinator resolved: confirmed")
+        case .pasteFailed:
+            Logger.edith.error("OverlayCoordinator resolved: confirmed-paste-failed")
+        case .dismissed:
+            Logger.edith.info("OverlayCoordinator resolved: dismissed")
         }
-        continuation.resume(returning: outcome)
+        continuation.resume(returning: resolved)
     }
 
     private func teardown() {

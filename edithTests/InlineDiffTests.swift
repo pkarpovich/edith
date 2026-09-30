@@ -97,12 +97,14 @@ nonisolated fileprivate struct DiffCase: Sendable, CustomTestStringConvertible {
     ]
 
     @Test(arguments: cases)
+    @MainActor
     fileprivate func diffProducesExpectedSegments(_ kase: DiffCase) {
         let attributed = attributedDiff(original: kase.original, result: kase.result, insertColor: .green)
         #expect(segments(attributed) == kase.expected)
     }
 
     @Test
+    @MainActor
     func insertColorParameterIsAppliedToHighlightedRuns() {
         let result = attributedDiff(original: "ac", result: "abc", insertColor: .red)
         let highlightedColors = result.runs.compactMap(\.backgroundColor)
@@ -110,6 +112,7 @@ nonisolated fileprivate struct DiffCase: Sendable, CustomTestStringConvertible {
     }
 
     @Test
+    @MainActor
     func insertForegroundParameterIsAppliedToHighlightedRuns() {
         let result = attributedDiff(
             original: "ac", result: "abc",

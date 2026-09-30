@@ -17,7 +17,7 @@ struct MockProvider: AIProvider {
         self.recorder = recorder
     }
 
-    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<String, Error> {
+    func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let delay = self.delay
         let recorder = self.recorder
         return AsyncThrowingStream { continuation in
@@ -31,7 +31,9 @@ struct MockProvider: AIProvider {
                     if let recorder {
                         await recorder.record(prompt: prompt, model: model, effort: effort)
                     }
-                    continuation.yield(prompt.uppercased())
+                    let output = prompt.uppercased()
+                    continuation.yield(.partial(output))
+                    continuation.yield(.finished(ProviderResponse(text: output, rawOutput: output, stopReason: nil)))
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
