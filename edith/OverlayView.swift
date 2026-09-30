@@ -161,26 +161,20 @@ private struct ReadyBody: View {
     let result: String
 
     var body: some View {
-        if original == result {
-            Text("Текст уже корректен - изменений не нужно.")
-                .font(.body.italic())
-                .foregroundStyle(.secondary)
-        } else {
-            ScrollView {
-                Text(
-                    attributedDiff(
-                        original: original,
-                        result: result,
-                        insertColor: .edithDiffBackground,
-                        insertForeground: .edithDiffForeground
-                    )
+        ScrollView {
+            Text(
+                attributedDiff(
+                    original: original,
+                    result: result,
+                    insertColor: .edithDiffBackground,
+                    insertForeground: .edithDiffForeground
                 )
-                .font(.body)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(maxHeight: DesignTokens.Body.maxHeight)
+            )
+            .font(.body)
+            .textSelection(.enabled)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxHeight: DesignTokens.Body.maxHeight)
     }
 }
 
@@ -251,8 +245,7 @@ private struct OverlayFooter: View {
     @ViewBuilder private var meta: some View {
         switch model.state {
         case .ready(let original, let result):
-            let delta = abs(result.count - original.count)
-            Text("\(delta) char · 1 edit").opacity(0.7)
+            Text(readyMetaLabel(original: original, result: result)).opacity(0.7)
         case .processing, .streaming:
             if let label = model.modelLabel {
                 Text(label).opacity(0.7)
@@ -261,6 +254,12 @@ private struct OverlayFooter: View {
             EmptyView()
         }
     }
+}
+
+nonisolated func readyMetaLabel(original: String, result: String) -> String {
+    guard original != result else { return "0 char · 0 edits" }
+    let delta = abs(result.count - original.count)
+    return "\(delta) char · 1 edit"
 }
 
 private struct KeycapHint: View {
