@@ -119,13 +119,22 @@ struct AskEdithIntentPrepareProviderTests {
 
     @Test
     func makeProviderReturnsClaudeCLIForCli() {
-        let provider = AskEdithIntent.makeProvider(kind: .cli)
+        let provider = AskEdithIntent.makeProvider(kind: .cli, cacheablePrefix: "Fix:\n")
         #expect(provider is ClaudeCLIProvider)
     }
 
     @Test
     func makeProviderReturnsAnthropicAPIForApi() {
-        let provider = AskEdithIntent.makeProvider(kind: .api)
-        #expect(provider is AnthropicAPIProvider)
+        let provider = AskEdithIntent.makeProvider(kind: .api, cacheablePrefix: "Fix:\n")
+        let api = try? #require(provider as? AnthropicAPIProvider)
+        #expect(api?.cacheablePrefix == "Fix:\n")
+    }
+
+    @Test
+    func prepareSplitsCacheablePrefixFromSelection() throws {
+        let path = try Self.writeTempPrompt("Fix:\n{{selection}}\nDone")
+        let prepared = try AskEdithIntent.prepare(path: path, selection: "abc")
+        #expect(prepared.cacheablePrefix == "Fix:\n")
+        #expect(prepared.rendered == "Fix:\nabc\nDone")
     }
 }

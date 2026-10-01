@@ -49,10 +49,7 @@ extension PromptDefinition {
     }
 
     nonisolated static func render(definition: PromptDefinition, variables: [String: String]) throws -> String {
-        var body = definition.body
-        if !body.contains("{{selection}}") {
-            body += "\n\n{{selection}}"
-        }
+        var body = template(of: definition)
         if let name = firstUnknownPlaceholder(in: body, knownNames: Set(variables.keys)) {
             throw PromptParserError.unknownVariable(name: name)
         }
@@ -60,6 +57,17 @@ extension PromptDefinition {
             body = body.replacingOccurrences(of: "{{\(key)}}", with: value)
         }
         return body
+    }
+
+    nonisolated static func cacheablePrefix(of definition: PromptDefinition) -> String {
+        let body = template(of: definition)
+        guard let placeholder = body.range(of: "{{selection}}") else { return body }
+        return String(body[..<placeholder.lowerBound])
+    }
+
+    nonisolated private static func template(of definition: PromptDefinition) -> String {
+        guard !definition.body.contains("{{selection}}") else { return definition.body }
+        return definition.body + "\n\n{{selection}}"
     }
 }
 

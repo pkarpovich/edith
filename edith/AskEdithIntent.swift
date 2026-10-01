@@ -76,7 +76,7 @@ struct AskEdithIntent: AppIntent {
                 original: selection
             )
             latestRun.run = run
-            let provider = Self.makeProvider(kind: prepared.provider)
+            let provider = Self.makeProvider(kind: prepared.provider, cacheablePrefix: prepared.cacheablePrefix)
             let outcome = await AskEdithRunner.drive(
                 provider: provider,
                 original: selection,
@@ -122,6 +122,7 @@ struct AskEdithIntent: AppIntent {
         )
         return PreparedPrompt(
             rendered: rendered,
+            cacheablePrefix: PromptDefinition.cacheablePrefix(of: definition),
             model: definition.model,
             effort: definition.effort,
             provider: definition.provider
@@ -147,12 +148,12 @@ struct AskEdithIntent: AppIntent {
     }
 
     @MainActor
-    static func makeProvider(kind: ProviderKind) -> any AIProvider {
+    static func makeProvider(kind: ProviderKind, cacheablePrefix: String) -> any AIProvider {
         switch kind {
         case .cli:
             return ClaudeCLIProvider()
         case .api:
-            return AnthropicAPIProvider(transport: URLSessionAnthropicTransport())
+            return AnthropicAPIProvider(transport: URLSessionAnthropicTransport(), cacheablePrefix: cacheablePrefix)
         }
     }
 
@@ -163,6 +164,7 @@ struct AskEdithIntent: AppIntent {
 
     nonisolated struct PreparedPrompt: Sendable, Equatable {
         let rendered: String
+        let cacheablePrefix: String
         let model: String?
         let effort: String?
         let provider: ProviderKind
