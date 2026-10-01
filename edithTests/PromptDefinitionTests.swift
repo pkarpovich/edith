@@ -303,3 +303,23 @@ struct PromptDefinitionRenderTests {
         }
     }
 }
+
+struct PromptDefinitionCacheablePrefixTests {
+    @Test(arguments: [
+        ("Fix this:\n<message>\n{{selection}}\n</message>", "Fix this:\n<message>\n"),
+        ("Fix this", "Fix this\n\n"),
+        ("{{selection}} only", ""),
+        ("A {{selection}} B {{selection}}", "A "),
+    ])
+    func prefixEndsAtFirstSelection(body: String, expected: String) {
+        let definition = PromptDefinition(model: nil, effort: nil, provider: .api, body: body)
+        #expect(PromptDefinition.cacheablePrefix(of: definition) == expected)
+    }
+
+    @Test
+    func renderedPromptStartsWithCacheablePrefix() throws {
+        let definition = PromptDefinition(model: nil, effort: nil, provider: .api, body: "Fix:\n{{selection}}")
+        let rendered = try PromptDefinition.render(definition: definition, variables: ["selection": "abc"])
+        #expect(rendered.hasPrefix(PromptDefinition.cacheablePrefix(of: definition)))
+    }
+}

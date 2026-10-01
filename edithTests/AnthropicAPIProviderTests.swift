@@ -427,6 +427,46 @@ struct AnthropicAPIProviderTests {
     }
 
     @Test
+    func buildRequestSplitsCacheablePrefixIntoCachedBlock() throws {
+        let request = try AnthropicAPIProvider.buildRequest(
+            apiKey: "k",
+            prompt: "Rules\n<message>abc</message>",
+            model: nil,
+            effort: nil,
+            cacheablePrefix: "Rules\n<message>"
+        )
+        let bodyData = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+        let messages = try #require(json["messages"] as? [[String: Any]])
+        let content = try #require(messages.first?["content"] as? [[String: Any]])
+
+        #expect(content.count == 2)
+        #expect(content[0]["text"] as? String == "Rules\n<message>")
+        #expect(content[0]["cache_control"] as? [String: String] == ["type": "ephemeral"])
+        #expect(content[1]["text"] as? String == "abc</message>")
+        #expect(content[1]["cache_control"] == nil)
+    }
+
+    @Test(arguments: [
+        ("", "hi"),
+        ("other", "hi"),
+        ("hi", "hi"),
+    ])
+    func buildRequestSendsPlainContentWithoutUsablePrefix(cacheablePrefix: String, prompt: String) throws {
+        let request = try AnthropicAPIProvider.buildRequest(
+            apiKey: "k",
+            prompt: prompt,
+            model: nil,
+            effort: nil,
+            cacheablePrefix: cacheablePrefix
+        )
+        let bodyData = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
+        let messages = json["messages"] as? [[String: String]]
+        #expect(messages == [["role": "user", "content": prompt]])
+    }
+
+    @Test
     func defaultAPIKeyProviderReadsFromKeychainFirst() {
         let backend = StubKeychainBackend(value: "from-keychain")
         let store = KeychainStore(backend: backend)

@@ -20,13 +20,16 @@ struct AnthropicAPIProvider: AIProvider {
 
     let transport: any AnthropicTransport
     let apiKeyProvider: @Sendable () -> String?
+    let cacheablePrefix: String
 
     nonisolated init(
         transport: any AnthropicTransport,
-        apiKeyProvider: @Sendable @escaping () -> String? = AnthropicAPIProvider.defaultAPIKeyProvider()
+        apiKeyProvider: @Sendable @escaping () -> String? = AnthropicAPIProvider.defaultAPIKeyProvider(),
+        cacheablePrefix: String = ""
     ) {
         self.transport = transport
         self.apiKeyProvider = apiKeyProvider
+        self.cacheablePrefix = cacheablePrefix
     }
 
     nonisolated static func defaultAPIKeyProvider(
@@ -44,13 +47,20 @@ struct AnthropicAPIProvider: AIProvider {
     func run(prompt: String, model: String?, effort: String?) -> AsyncThrowingStream<ProviderEvent, Error> {
         let transport = self.transport
         let apiKeyProvider = self.apiKeyProvider
+        let cacheablePrefix = self.cacheablePrefix
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
                     guard let apiKey = apiKeyProvider(), !apiKey.isEmpty else {
                         throw AIProviderError.missingApiKey
                     }
-                    let request = try Self.buildRequest(apiKey: apiKey, prompt: prompt, model: model, effort: effort)
+                    let request = try Self.buildRequest(
+                        apiKey: apiKey,
+                        prompt: prompt,
+                        model: model,
+                        effort: effort,
+                        cacheablePrefix: cacheablePrefix
+                    )
                     let (http, dataStream) = try await transport.openStream(request: request)
                     if !(200..<300).contains(http.statusCode) {
                         let bodyText = try await Self.drainBody(dataStream, limit: Self.errorBodyLimit)
@@ -97,7 +107,13 @@ struct AnthropicAPIProvider: AIProvider {
         }
     }
 
-    static func buildRequest(apiKey: String, prompt: String, model: String?, effort: String?) throws -> URLRequest {
+    static func buildRequest(
+        apiKey: String,
+        prompt: String,
+        model: String?,
+        effort: String?,
+        cacheablePrefix: String = ""
+    ) throws -> URLRequest {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
@@ -114,7 +130,7 @@ struct AnthropicAPIProvider: AIProvider {
             "stream": true,
             "output_config": outputConfig,
             "messages": [
-                ["role": "user", "content": prompt],
+                ["role": "user", "content": userContent(prompt: prompt, cacheablePrefix: cacheablePrefix)],
             ],
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
@@ -134,6 +150,17 @@ struct AnthropicAPIProvider: AIProvider {
             }
         }
         return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    static func userContent(prompt: String, cacheablePrefix: String) -> Any {
+        guard !cacheablePrefix.isEmpty, prompt.hasPrefix(cacheablePrefix), prompt.count > cacheablePrefix.count else {
+            return prompt
+        }
+        let variablePart = String(prompt.dropFirst(cacheablePrefix.count))
+        return [
+            ["type": "text", "text": cacheablePrefix, "cache_control": ["type": "ephemeral"]],
+            ["type": "text", "text": variablePart],
+        ]
     }
 
     static func parseResponse(_ output: String, stopReason: String?, refusalCategory: String?) throws -> ProviderResponse {
